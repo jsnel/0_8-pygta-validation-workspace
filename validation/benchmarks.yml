@@ -1,0 +1,100 @@
+version: 1
+scenario_manifest: scenarios.yml
+
+defaults:
+  repetitions: 5
+  warmups: 1
+  timing: public_fit_call
+expected_fit_calls: 15
+
+branches:
+  main:
+    label: v0.7.4
+    entrypoint: glotaran.optimization.optimize.optimize
+  staging:
+    label: v0.8-staging
+    entrypoint: glotaran.project.scheme.Scheme.optimize
+
+# invocation is one-based and counts optimizer calls within the notebook.
+# cell_id refers to the original notebook cell before the in-memory benchmark
+# prelude is inserted.
+cases:
+  - id: study_fluorescence/global
+    scenario: study_fluorescence
+    notebook: study_fluorescence/fluorescence_global_and_target_analysis.ipynb
+    main: {cell_id: "9", invocation: 1}
+    staging: {cell_id: "9", invocation: 1}
+  - id: study_fluorescence/target
+    scenario: study_fluorescence
+    notebook: study_fluorescence/fluorescence_global_and_target_analysis.ipynb
+    main: {cell_id: "16", invocation: 2}
+    staging: {cell_id: "18", invocation: 2}
+
+  - id: study_transient_absorption/target_analysis
+    scenario: study_transient_absorption/target_analysis
+    notebook: study_transient_absorption/transient_absorption_target_analysis.ipynb
+    main: {cell_id: "4", invocation: 1}
+    staging: {cell_id: "3", invocation: 1}
+  - id: study_transient_absorption/two_dataset_analysis
+    scenario: study_transient_absorption/two_dataset_analysis
+    notebook: study_transient_absorption/transient_absorption_two_dataset_analysis.ipynb
+    main: {cell_id: "4", invocation: 1}
+    staging: {cell_id: "3", invocation: 1}
+
+  - id: ex_spectral_constraints/no_penalties_first_run
+    scenario: ex_spectral_constraints/no_penalties_first_run
+    notebook: ex_spectral_constraints/ex_spectral_constraints.ipynb
+    main: {cell_id: "3", invocation: 1}
+    staging: {cell_id: "6", invocation: 1}
+  - id: ex_spectral_constraints/no_penalties
+    scenario: ex_spectral_constraints/no_penalties
+    notebook: ex_spectral_constraints/ex_spectral_constraints.ipynb
+    main: {cell_id: "3", invocation: 2}
+    staging: {cell_id: "7", invocation: 2}
+  - id: ex_spectral_constraints/with_penalties_first_run
+    scenario: ex_spectral_constraints/with_penalties_first_run
+    notebook: ex_spectral_constraints/ex_spectral_constraints.ipynb
+    main: {cell_id: "8", invocation: 3}
+    staging: {cell_id: "13", invocation: 3}
+  - id: ex_spectral_constraints/with_penalties
+    scenario: ex_spectral_constraints/with_penalties
+    notebook: ex_spectral_constraints/ex_spectral_constraints.ipynb
+    main: {cell_id: "11", invocation: 4}
+    staging: {cell_id: "15", invocation: 4}
+
+  - id: ex_spectral_guidance
+    scenario: ex_spectral_guidance
+    notebook: ex_spectral_guidance/ex_spectral_guidance.ipynb
+    main: {cell_id: "4", invocation: 1}
+    staging: {cell_id: "4", invocation: 1}
+  - id: ex_two_datasets
+    scenario: ex_two_datasets
+    notebook: ex_two_datasets/ex_two_datasets.ipynb
+    main: {cell_id: "4", invocation: 1}
+    staging: {cell_id: "10", invocation: 1}
+  - id: ex_doas_beta/target_analysis
+    scenario: ex_doas_beta/target_analysis
+    notebook: ex_doas_beta/ex_doas_beta.ipynb
+    main: {cell_id: "3", invocation: 1}
+    staging: {cell_id: "3", invocation: 1}
+
+  - id: simultaneous_analysis_3d_disp
+    scenario: simultaneous_analysis_3d_disp
+    notebook: test/simultaneous_analysis_3d_disp/sim_analysis_script_3d_disp.ipynb
+    main: {cell_id: "5", invocation: 1}
+    staging: {cell_id: "4", invocation: 1}
+  - id: simultaneous_analysis_3d_nodisp
+    scenario: simultaneous_analysis_3d_nodisp
+    notebook: test/simultaneous_analysis_3d_nodisp/simultaneous_analysis_3d_nodisp.ipynb
+    main: {cell_id: "5", invocation: 1}
+    staging: {cell_id: "4", invocation: 1}
+  - id: simultaneous_analysis_3d_weight
+    scenario: simultaneous_analysis_3d_weight
+    notebook: test/simultaneous_analysis_3d_weight/simultaneous_analysis_3d_weight.ipynb
+    main: {cell_id: "5", invocation: 1}
+    staging: {cell_id: "4", invocation: 1}
+  - id: simultaneous_analysis_6d_disp
+    scenario: simultaneous_analysis_6d_disp
+    notebook: test/simultaneous_analysis_6d_disp/simultaneous_analysis_6d_disp.ipynb
+    main: {cell_id: "5", invocation: 1}
+    staging: {cell_id: "4", invocation: 1}

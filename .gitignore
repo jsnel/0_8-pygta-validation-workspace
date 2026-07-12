@@ -218,3 +218,16 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Cross-branch validation outputs. Keep manifests, scripts, tests, and hand-written
+# documentation trackable; ignore only regenerated evidence and runtime artifacts.
+validation/runs/
+validation/comparisons/
+validation/benchmarks/*
+!validation/benchmarks/README.md
+validation/benchmarks/raw/
+validation/benchmarks/v07-v08-runtime*/
+validation/benchmarks/*.csv
+validation/benchmarks/*.json
+validation/benchmarks/*.png
+validation/benchmarks/*.svg
