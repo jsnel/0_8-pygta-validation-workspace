@@ -1,0 +1,6 @@
+[submodule "temp/pyglotaran-staging-dev"]
+	path = temp/pyglotaran-staging-dev
+	url = https://github.com/jsnel/pyglotaran-staging-dev.git
+[submodule "temp/pyglotaran-main-dev"]
+	path = temp/pyglotaran-main-dev
+	url = https://github.com/jsnel/pyglotaran-main-dev.git
