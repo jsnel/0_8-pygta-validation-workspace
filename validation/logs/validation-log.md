@@ -41,3 +41,16 @@ Generated [v07-v08-detailed.md](../comparisons/v07-v08-detailed.md) and its JSON
 - Final semantic comparison: `8 PASS`, `6 EXPECTED_DIFFERENCE`, `0 REGRESSION`, `0 BASELINE_FAILURE`, `0 BLOCKED`; worst accepted fitted-data normalized RMS is `2.446e-5` in the documented weighted case.
 - Remaining expected differences are limited to the weakly identified `rates.k3d2` path, non-identifiable/decomposition representations, and the documented weighted solver/scale drift. No broad pyglotaran core change was made.
 - Reproducibility evidence is embedded in `comparisons/v07-v08-semantic.json`: Python/package versions, source-tree SHA-256 values, lockfile SHA-256 values, notebook source-tree SHA-256 values, and result-tree SHA-256 values.
+
+## 2026-07-12 — main feature ports to staging
+
+- Created staging branch `feature/port-main-features-to-staging` from `7efc9d1114a2455da8bc37fc4770a455ef2e437a` and produced five individual commits: matrix ordering `4b48f373`, PFID `f33ac3c0`, ASCII NumPy scalars `b6be5f86`, pandas 3 compatibility `fc542d27`, and SVD/simulation dimension ordering `468c4cd5`.
+- Each feature commit includes its implementation, focused regression tests, and its own v0.8 `changelog.md` entry.
+- Focused PFID/model/parameter tests passed (`11 passed`); ASCII tests passed (`3 passed`); SVD/simulation tests passed (`10 passed`). Parameter and pandas IO coverage passed in both Python 3.10/pandas 2 (`80 passed`) and isolated Python 3.11/pandas 3.0.1 (`80 passed`).
+- Full staging suite: `448 passed, 9 xfailed`.
+- Restored the previously documented staging-example parity inputs in the checked-out examples tree: target budget 10, spectral-guidance budget 21, two-dataset budget 17, DOAS saving, and four separately saved spectral-constraint leaves.
+- Corrected the staging orchestration contract pin to the checked-out revision `be1c861cfce21db94e1a360e882df4c8e942a40e`.
+- Fresh notebook evidence under `validation/runs/{main,staging}/20260712-175136`: v0.7.4 `11/11`, staging `11/11`.
+- Semantic report `validation/comparisons/v07-v08-20260712-175136.json`: `8 PASS`, `6 EXPECTED_DIFFERENCE`, zero `REGRESSION`, zero `BASELINE_FAILURE`, all 14 declared leaves present, acceptable `true`.
+- Validation-side regression tests: `10 passed`.
+- Runtime report `validation/benchmarks/v07-v08-runtime-20260712-175136/runtime.json`: `REPORT_ONLY`, 12 successful workers, 150 samples, 15 summaries, all function-evaluation workloads matched, and no warnings.

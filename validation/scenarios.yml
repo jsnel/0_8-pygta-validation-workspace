@@ -7,8 +7,8 @@ pinned_commits:
     pyglotaran_examples: 5e157363ca6e776c3da7a6c4742a07930d205138
     pyglotaran_extras: dcbe4baad5949768b65bf602d58018b5fe309f0a
   staging:
-    orchestration: be1c86168df5c60ff9809a320e72fe33f4076636
-    pyglotaran: 7efc9d1114a2455da8bc37fc4770a455ef2e437a
+    orchestration: be1c861cfce21db94e1a360e882df4c8e942a40e
+    pyglotaran: 468c4cd57aaf25c10edf85cd197df771bad0a766
     pyglotaran_examples: 5a57fb5c47c9f0934ab573319bf929d35e690ed7
     pyglotaran_extras: d57940be02751c670ee90f3bc09af7cd954a1d08
 defaults:

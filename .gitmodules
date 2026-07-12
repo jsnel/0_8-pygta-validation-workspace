@@ -4,3 +4,6 @@
 [submodule "temp/pyglotaran-main-dev"]
 	path = temp/pyglotaran-main-dev
 	url = https://github.com/jsnel/pyglotaran-main-dev.git
+[submodule "temp/pyglotaran-validation-data-paramGUI"]
+	path = temp/pyglotaran-validation-data-paramGUI
+	url = https://github.com/s-weigand/pyglotaran-validation-data-paramGUI.git
