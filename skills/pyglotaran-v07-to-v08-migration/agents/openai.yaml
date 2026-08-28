@@ -1,0 +1,4 @@
+interface:
+  display_name: "PyGTA v0.7 to v0.8 Migration"
+  short_description: "Migrate pyglotaran model specs to v0.8"
+  default_prompt: "Use $pyglotaran-v07-to-v08-migration to migrate this pyglotaran v0.7 model and fitting code to v0.8."
