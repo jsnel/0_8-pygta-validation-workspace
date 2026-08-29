@@ -221,6 +221,7 @@ __marimo__/
 
 # Cross-branch validation outputs. Keep manifests, scripts, tests, and hand-written
 # documentation trackable; ignore only regenerated evidence and runtime artifacts.
+temp/case-studies/
 validation/runs/
 validation/comparisons/
 validation/benchmarks/*

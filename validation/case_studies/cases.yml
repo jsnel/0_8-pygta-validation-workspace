@@ -1,0 +1,27 @@
+version: 1
+repositories:
+  - slug: pygta-protocol-streak-ps1
+    url: https://github.com/ism200/pygta-protocol-streak-PS1
+    rationale: >-
+      The two notebooks are the repository's only executable analyses and together
+      implement the documented global and target streak-camera protocol.
+    notebooks:
+      - streak/Step_1_and_2_PSI_CF9212_streak_global_target_dispWL.ipynb
+      - streak/Step_3_and_4_PSI_CF9212_streak_global_target_disp.ipynb
+  - slug: pygta-protocol-ta-ps1
+    url: https://github.com/ism200/pygta-protocol-TA-PS1
+    rationale: >-
+      The three notebooks are the repository's only executable analyses and form
+      the documented ideal-target, global, and target-analysis sequence.
+    notebooks:
+      - PSI_TA_Scy6803GTA/step_1_target_PSI_TA_ideal.ipynb
+      - PSI_TA_Scy6803GTA/step_2_global_PSI_TA_SCy6803with_DOAS.ipynb
+      - PSI_TA_Scy6803GTA/step_3_target_PSI_TA_SCy6803.ipynb
+  - slug: pub-2023-05-van-stokkum-et-al
+    url: https://github.com/glotaran/pub-2023-05-van_Stokkum_et_al
+    rationale: >-
+      Both notebooks are publication analysis entry points and collectively cover
+      the TA target analysis and the linked 25-dataset streak/TA analysis.
+    notebooks:
+      - 20230522PSI_TA_Scy6803target/20230521PSI_TA_Scy6803.ipynb
+      - 20230522target_linking25streak_and_TA_datasets/20230522PSI_TA_streak.ipynb

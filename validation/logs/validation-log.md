@@ -54,3 +54,24 @@ Generated [v07-v08-detailed.md](../comparisons/v07-v08-detailed.md) and its JSON
 - Semantic report `validation/comparisons/v07-v08-20260712-175136.json`: `8 PASS`, `6 EXPECTED_DIFFERENCE`, zero `REGRESSION`, zero `BASELINE_FAILURE`, all 14 declared leaves present, acceptable `true`.
 - Validation-side regression tests: `10 passed`.
 - Runtime report `validation/benchmarks/v07-v08-runtime-20260712-175136/runtime.json`: `REPORT_ONLY`, 12 successful workers, 150 samples, 15 summaries, all function-evaluation workloads matched, and no warnings.
+
+## 2026-08-28 — external case-study visual-review evidence
+
+- Pinned paired reference/staging bases for `pygta-protocol-streak-PS1` (`dcad534e0f6c809c9b7aa03c646ea1796192a0b7`), `pygta-protocol-TA-PS1` (`d7612bc9a7f79812c4ad7c5cfcef0ccaecda0c59`), and `pub-2023-05-van_Stokkum_et_al` (`6bf9c260deaa014ce9cf5327c5c8e521ce9883a2`). The initial tracked trees match, with no submodules or Git LFS files.
+- Preserved all reference and original v0.7 files. Added isolated `_v08` scheme/notebook copies in staging and committed them on each repository's `staging` branch: `f186361713a74fc7c6605b0f4a442d1e1c7947eb`, `f837892b1bbf3c31e068ae79fa44ea6653fe676b`, and `e253a7ea226a069823d94568dface2b7b66cfaf4` respectively.
+- Generated parameter-aware schemas where statically paired parameters were available and strictly loaded all 25 migrated schemes. The two spectral guide schemes are recorded as `NOT_PRACTICAL` for parameter-aware schema generation but loaded successfully.
+- Final isolated run `validation/runs/case-studies/20260828-203340Z`: 7/7 untouched v0.7.4 reference notebooks and 7/7 committed v0.8 staging notebooks passed. The migrated notebooks recorded 30 load/dry-run validations and 30 real fits.
+- Extracted paired inline plot evidence: streak 44/44, transient absorption 81/81, and publication 58/58 reference/staging images. The notebooks generated no file-based plots; manifests record empty file-plot lists. Native reloadable result artifacts and hashes are retained alongside executed notebooks, logs, commands, dependency metadata, and base-to-staging patches.
+- Provisional semantic reports under `validation/comparisons/case-studies/20260828-203340Z/` contain 9/9 result leaves with no missing artifacts and matching function-evaluation counts. All three repositories remain `REVIEW_REQUIRED` at the comparison layer; notably, the linked publication result has worst fitted-data normalized RMS `1.7078610902271951`. No scientific parity, expected-difference/regression label, root cause, or subjective visual decision was assigned.
+- The top-level and per-repository manifests classify all three repositories `READY_FOR_VISUAL_REVIEW`. `validation/runs/case-studies/20260828-203340Z/verification.json` passed 1,302 artifact path, hash, and executed-notebook readability checks with no errors.
+- Validation-side tests: `12 passed in 1.90s`. Runtime benchmarking was not run because optimizer/runtime behavior and benchmark instrumentation were unchanged.
+
+## 2026-08-29 — post-penalty-fix baseline rerun
+
+- Validated reference revisions `78ffaf5a` / `8f26be01` / `5e157363` / `dcbe4baa` against staging orchestration `5889e03d`, core `fb001015`, examples `7f7fd227`, and extras `d57940be`. The staging core includes kinetic activation normalization and restored v0.7 signed/nearest-sample equal-area semantics.
+- The first staging reruns exposed two result-path regressions in the equal-area implementation: xarray scalar slice indices and an unexpanded index-independent matrix during result metadata construction. Focused fixes were committed as core commits `af9d5d5d` and `fb001015`; the latter is pinned by staging orchestration commit `5889e03d`.
+- Accepted notebook artifacts: reference `validation/runs/main/20260829-162147Z` and staging `validation/runs/staging/20260829-162539Z`, each 11/11 notebooks passed. Failed intermediate staging evidence remains under `validation/runs/staging/20260829-161618Z` and `validation/runs/staging/20260829-162147Z`.
+- Semantic report `validation/comparisons/v07-v08-20260829-162539Z.json`: all 14 leaves present; `8 PASS`, `6 EXPECTED_DIFFERENCE`, zero `REGRESSION`, zero `BASELINE_FAILURE`, acceptable `true`.
+- Scenario statuses and fitted-data metrics are unchanged from `v07-v08-20260712-175136.json`. The `rates.k3d2`, spectral-guidance decomposition, weighted 3D scale, weighted-RMSE persistence, and representation investigations therefore remain open; none was resolved by these fixes.
+- Core optimization/kinetic regression tests: `73 passed`. Validation-side regression tests: `12 passed`.
+- Runtime report `validation/benchmarks/v07-v08-runtime-20260829-162539Z/runtime.json`: `REPORT_ONLY`, 12 successful workers, 150 samples, 15 summaries, all function-evaluation workloads matched, and no workload warnings.

@@ -17,3 +17,16 @@
 - Clean matrix result: 11/11 notebooks per branch; 8 PASS and 6 documented EXPECTED_DIFFERENCE leaves, with no regressions or missing artifacts.
 - Recorded source, lockfile, notebook, and result hashes in validation/comparisons/v07-v08-semantic.json.
 - Added issues/ with investigation briefs for weighted scale drift, rates.k3d2 identifiability, and weighted-RMSE persistence.
+
+## 2026-08-28
+
+- Added isolated external case-study inventory, v0.7-to-v0.8 migration, notebook execution, schema validation, provisional semantic comparison, evidence packaging, and hash-verification tooling under `validation/case_studies/`.
+- Prepared image-complete reference/staging evidence for seven selected notebooks across three repositories at `validation/runs/case-studies/20260828-203340Z/`; all 14 executions passed and produced 366 extracted inline images in paired reference/staging sets.
+- Added provisional comparison reports for nine reloadable result leaves under `validation/comparisons/case-studies/20260828-203340Z/`, without final scientific or root-cause classification.
+- Added focused case-study tooling tests; the complete validation-side suite passes (`12 passed`).
+
+## 2026-08-29
+
+- Pinned staging pyglotaran fixes for kinetic activation normalization and v0.7-compatible signed, nearest-sample equal-area penalties, including xarray-axis and result-packaging regression coverage.
+- Re-ran the established 11-notebook/14-leaf validation: both branches completed 11/11 notebooks and the semantic report remained acceptable at 8 `PASS`, 6 documented `EXPECTED_DIFFERENCE`, and no regressions or missing artifacts.
+- Re-ran the report-only runtime benchmark with 12 successful workers, 150 timed samples, 15 summaries, and matching function-evaluation workloads.
