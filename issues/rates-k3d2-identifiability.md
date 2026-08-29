@@ -131,3 +131,12 @@ or v0.8 serializes a value different from the optimizer final state.
 - Do not add a global bound solely to reproduce v0.7.
 - Do not treat matching one scalar parameter as more important than the
   reconstructed fitted data without identifiability evidence.
+
+## 2026-08-29 rerun evidence
+
+The fresh comparison at
+`validation/comparisons/v07-v08-20260829-162539Z.json` reproduces the previous
+fitted-data metric (`1.3827653525142653e-05` worst normalized RMS), parameter
+difference, and `EXPECTED_DIFFERENCE` status. The kinetic activation and
+equal-area penalty fixes did not affect this scenario, so this investigation
+remains open with no change in classification.

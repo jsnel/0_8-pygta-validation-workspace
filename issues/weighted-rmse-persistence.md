@@ -117,3 +117,11 @@ consumers cannot obtain the diagnostics without re-executing the fit.
 - Do not copy the v0.7 monolithic file layout into v0.8.
 - Do not silently label derived values as persisted.
 - Do not change weighted-RMSE mathematics while investigating persistence.
+
+## 2026-08-29 rerun evidence
+
+The fresh comparison at
+`validation/comparisons/v07-v08-20260829-162539Z.json` again derives omitted
+default weighted-RMSE and scale metadata through the compatibility layer while
+all declared leaves remain complete. The recent optimizer fixes did not change
+the persistence behavior, so this investigation remains open.

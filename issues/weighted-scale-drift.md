@@ -136,3 +136,12 @@ Do not close this issue by post-processing v0.8 parameters to equal v0.7.
 - Do not refactor weighted optimization globally.
 - Do not change the public result model solely to make this comparison pass.
 - Do not relax the tolerance further without a quantitative explanation.
+
+## 2026-08-29 rerun evidence
+
+The fresh comparison at
+`validation/comparisons/v07-v08-20260829-162539Z.json` reproduces the previous
+dataset-3 fitted-data normalized RMS (`2.446285059310538e-05`), parameter
+result, and `EXPECTED_DIFFERENCE` status. The kinetic activation and equal-area
+penalty fixes did not affect this scenario, so the scale-drift investigation
+remains open.
