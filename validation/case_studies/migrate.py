@@ -246,7 +246,11 @@ def constraint_targets(item: dict[str, Any]) -> list[str]:
     return [str(value) for value in target] if isinstance(target, list) else [str(target)]
 
 
-def convert_model(document: dict[str, Any], source: Path) -> tuple[dict[str, Any], dict[str, Any]]:
+def convert_model(
+    document: dict[str, Any],
+    source: Path,
+    clp_link_tolerance: float | None = None,
+) -> tuple[dict[str, Any], dict[str, Any]]:
     checked_keys(document, MODEL_TOP_LEVEL_KEYS, str(source))
     if any(not group.get("link_clp", True) for group in (document.get("dataset_groups") or {}).values()):
         raise ValueError(f"Intentional unlinked CLP behavior in {source}")
@@ -259,6 +263,7 @@ def convert_model(document: dict[str, Any], source: Path) -> tuple[dict[str, Any
         "clp_label_translations": [],
         "inert_weight_dataset_selectors": [],
         "inert_relations_and_penalties": [],
+        "clp_link_tolerance": clp_link_tolerance,
     }
     megacomplexes = document.get("megacomplex") or {}
     library: dict[str, Any] = {}
@@ -308,7 +313,9 @@ def convert_model(document: dict[str, Any], source: Path) -> tuple[dict[str, Any
             "datasets": {},
         }
         if document.get("dataset_groups") is not None:
-            experiment["clp_link_tolerance"] = 0.1
+            experiment["clp_link_tolerance"] = (
+                clp_link_tolerance if clp_link_tolerance is not None else 0.1
+            )
         experiments[group_label] = experiment
 
     dataset_groups: dict[str, str] = {}
@@ -410,6 +417,62 @@ def schema_documents(root: Path) -> dict[Path, dict[str, Any]]:
         if isinstance(document, dict) and "dataset" in document and "megacomplex" in document:
             documents[path] = document
     return documents
+
+
+def notebook_clp_link_tolerances(
+    paths: list[Path], model_documents: dict[Path, dict[str, Any]]
+) -> dict[Path, float]:
+    """Collect explicit v0.7 Scheme CLP-link tolerances by source model."""
+    resolved_documents = {path.resolve() for path in model_documents}
+    tolerances: dict[Path, float] = {}
+    for path in paths:
+        constants: dict[str, Path] = {}
+        notebook = nbformat.read(path, as_version=4)
+        for cell in notebook.cells:
+            if cell.cell_type != "code":
+                continue
+            for node in ast.parse(cell.source or "pass").body:
+                if not isinstance(node, ast.Assign) or len(node.targets) != 1:
+                    continue
+                if not isinstance(node.targets[0], ast.Name):
+                    continue
+                if isinstance(node.value, ast.Constant) and isinstance(node.value.value, str):
+                    candidate = (path.parent / node.value.value).resolve()
+                    if candidate in resolved_documents:
+                        constants[node.targets[0].id] = candidate
+                    continue
+                if not isinstance(node.value, ast.Call):
+                    continue
+                function = node.value.func
+                if not isinstance(function, ast.Name) or function.id != "Scheme":
+                    continue
+                keywords = {keyword.arg: keyword.value for keyword in node.value.keywords if keyword.arg}
+                model = keywords.get("model", node.value.args[0] if node.value.args else None)
+                tolerance = keywords.get("clp_link_tolerance")
+                if model is None or tolerance is None:
+                    continue
+                if isinstance(model, ast.Constant) and isinstance(model.value, str):
+                    source_model = (path.parent / model.value).resolve()
+                elif isinstance(model, ast.Name):
+                    source_model = constants.get(model.id)
+                else:
+                    source_model = None
+                if source_model not in resolved_documents:
+                    continue
+                if not isinstance(tolerance, ast.Constant) or not isinstance(
+                    tolerance.value, (int, float)
+                ):
+                    raise ValueError(
+                        f"CLP link tolerance for {source_model} in {path} is not a numeric literal"
+                    )
+                value = float(tolerance.value)
+                previous = tolerances.get(source_model)
+                if previous is not None and previous != value:
+                    raise ValueError(
+                        f"Conflicting CLP link tolerances for {source_model}: {previous} and {value}"
+                    )
+                tolerances[source_model] = value
+    return tolerances
 
 
 class NotebookMigrator(ast.NodeTransformer):
@@ -732,6 +795,13 @@ def _case_study_convert(native_result, scheme):
                 kinetic=component_dimension
             )
         if kinetic_elements:
+            legacy_species_order = list(
+                dict.fromkeys(
+                    compartment
+                    for activation in data_model.activations.values()
+                    for compartment in activation.compartments
+                )
+            )
             species_concentration = xr.concat(
                 [
                     element["concentrations"].rename(compartment="species")
@@ -741,6 +811,13 @@ def _case_study_convert(native_result, scheme):
             )
             species_concentration = species_concentration.isel(
                 species=~species_concentration.get_index("species").duplicated()
+            )
+            species_concentration = species_concentration.sel(
+                species=[
+                    species
+                    for species in legacy_species_order
+                    if species in species_concentration.coords["species"].values
+                ]
             )
             concentration_order = [
                 dimension
@@ -761,6 +838,13 @@ def _case_study_convert(native_result, scheme):
             )
             species_associated_spectra = species_associated_spectra.isel(
                 species=~species_associated_spectra.get_index("species").duplicated()
+            )
+            species_associated_spectra = species_associated_spectra.sel(
+                species=[
+                    species
+                    for species in legacy_species_order
+                    if species in species_associated_spectra.coords["species"].values
+                ]
             )
             spectra_order = [
                 dimension
@@ -786,7 +870,23 @@ def _case_study_convert(native_result, scheme):
             )
             dataset["initial_concentration"] = initial_concentration.isel(
                 species=~initial_concentration.get_index("species").duplicated()
+            ).sel(
+                species=[
+                    species
+                    for species in legacy_species_order
+                    if species in initial_concentration.coords["species"].values
+                ]
             )
+            kinetic_compatibility_variables = [
+                variable
+                for element_label in optimization_result.elements
+                for variable in (
+                    f"species_concentration_{element_label}",
+                    f"species_associated_spectra_{element_label}",
+                )
+                if variable in dataset
+            ]
+            dataset = dataset.drop_vars(kinetic_compatibility_variables)
         spectral_elements = [
             element
             for element in optimization_result.elements.values()
@@ -818,6 +918,7 @@ def _case_study_convert(native_result, scheme):
             )
             dataset["species_spectra"] = species_spectra.transpose(*spectral_order)
         dataset.attrs["dataset_scale"] = optimization_result.meta.scale
+        compat_result.data[dataset_label] = dataset
     return compat_result
 
 
@@ -869,11 +970,17 @@ def migrate_notebook(path: Path, model_documents: dict[Path, dict[str, Any]]) ->
 
 def migrate_repository(root: Path, specification: dict[str, Any]) -> dict[str, Any]:
     documents = schema_documents(root)
+    notebook_paths = [root / relative for relative in specification["notebooks"]]
+    clp_link_tolerances = notebook_clp_link_tolerances(notebook_paths, documents)
     model_records = []
     for source, document in documents.items():
         if source.stem.endswith("tmp"):
             continue
-        converted, log = convert_model(document, source)
+        converted, log = convert_model(
+            document,
+            source,
+            clp_link_tolerance=clp_link_tolerances.get(source.resolve()),
+        )
         destination = migrated_path(source)
         content = "# Migrated from pyglotaran v0.7 for v0.8 staging validation.\n" + yaml.safe_dump(
             converted, sort_keys=False, allow_unicode=True
@@ -889,8 +996,7 @@ def migrate_repository(root: Path, specification: dict[str, Any]) -> dict[str, A
             }
         )
     notebooks = []
-    for relative in specification["notebooks"]:
-        source = root / relative
+    for source in notebook_paths:
         destination = migrate_notebook(source, documents)
         notebooks.append(
             {

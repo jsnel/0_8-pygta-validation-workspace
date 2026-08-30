@@ -8,6 +8,7 @@ from validation.case_studies.compare import compare
 from validation.case_studies.compare import result_file
 from validation.case_studies.migrate import convert_model
 from validation.case_studies.migrate import migrate_notebook
+from validation.case_studies.migrate import notebook_clp_link_tolerances
 from validation.case_studies.run_case_study import environment_metadata
 from validation.case_studies.run_case_study import instrument_fit_results
 from validation.case_studies.run_case_study import source_patch
@@ -180,6 +181,26 @@ def test_migrate_notebook_loads_parameter_path_variable(tmp_path: Path) -> None:
 
     assert "scheme_parameters = load_parameters(parameter_path)" in code
     assert "_case_study_simulate(load_scheme(model_path), 'dataset'" in code
+
+
+def test_notebook_clp_link_tolerance_is_associated_with_model(tmp_path: Path) -> None:
+    model_path = tmp_path / "models" / "example.yml"
+    model_path.parent.mkdir()
+    model_path.write_text("dataset: {}\nmegacomplex: {}\n", encoding="utf-8")
+    notebook_path = tmp_path / "analysis.ipynb"
+    notebook = nbformat.v4.new_notebook(
+        cells=[
+            nbformat.v4.new_code_cell(
+                "scheme = Scheme(model='models/example.yml', parameters='parameters.csv', "
+                "data={}, clp_link_tolerance=2.1)"
+            )
+        ]
+    )
+    nbformat.write(notebook, notebook_path)
+
+    tolerances = notebook_clp_link_tolerances([notebook_path], {model_path: {}})
+
+    assert tolerances == {model_path.resolve(): 2.1}
 
 
 def test_instrument_fit_results_skips_dry_runs() -> None:

@@ -93,22 +93,33 @@ Generated [v07-v08-detailed.md](../comparisons/v07-v08-detailed.md) and its JSON
   staging indexed relation labels even when absent from the local aligned CLP
   axis. The focused core regression test passes (`2 passed`). See
   `issues/clp-relation-missing-label.md`.
-- The captured clean run `validation/runs/case-studies/20260830-084447/` passed
+- The final captured run `validation/runs/case-studies/20260830-182522/` passed
   3/3 reference and 3/3 staging notebooks, with seven load/dry-run checks and
   seven real fits. Six fit-associated migrated schemes strictly load; four have
   parameter-aware schemas and two spectral schemes are `NOT_PRACTICAL` for
   static parameter pairing. The seventh migrated scheme is simulation-only and
   loads during notebook execution.
+- The whole-cell migration now preserves the notebook's Scheme-level
+  `clp_link_tolerance=2.1` in both v0.8 experiments. Its objective cost and CLP
+  count match exactly (`5.1245e+05`, `1886`), and its worst fitted-data
+  normalized RMS improved from `2.67e-1` to `2.411819127175127e-8`.
+- The compatibility projection restores the v0.7 initial-concentration species
+  order. The reference/staging Fig. 7 PNGs are pixel-identical (486,356 pixels,
+  zero differing pixels), while label-aligned concentration and SAS arrays agree
+  to normalized RMS `2.1e-16` and `5.7e-15`, respectively.
 - All seven result leaves are present in the provisional semantic comparison.
-  Every leaf is `REVIEW_REQUIRED`: the two room-temperature fits meet the
-  primary fitted-data tolerance (worst normalized RMS about `1.67e-8`) but have
-  secondary evidence differences; the remaining five fits have worst
-  fitted-data normalized RMS values from `3.17e-4` to `2.67e-1`. The first
-  spectral fit also has a workload mismatch (`20` vs `25` evaluations).
+  Every leaf remains `REVIEW_REQUIRED`: the whole-cell fit and two
+  room-temperature fits meet the primary fitted-data tolerance but retain
+  secondary representation evidence; the four MCL leaves remain between
+  `3.17e-4` and `2.94e-2`. The first spectral fit also has a workload mismatch
+  (`20` vs `25` evaluations).
 - No scientific parity, expected-difference/regression label, or subjective
   visual acceptance is assigned. Runtime benchmarking was not run because the
   case-study evidence records fit workloads directly and the shared benchmark
   contract was unchanged.
+- Validation-side tests: `22 passed`. The pinned established baseline rerun at
+  `validation/comparisons/v07-v08-20260830-110309.json` is acceptable with
+  11/11 notebooks per branch and all 14 declared leaves present.
 
 ## 2026-08-30 — kinetic activation normalization inflated by injected amplitudes
 

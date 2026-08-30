@@ -22,8 +22,8 @@ axis before applying a relation. The publication case study
 - Focused core test result: `2 passed`.
 - The previously failing 22-dataset dry run and real fit subsequently pass.
 - Definitive case-study evidence is under
-  `validation/runs/case-studies/20260830-084447/` and its semantic report under
-  `validation/comparisons/case-studies/20260830-084447/`.
+  `validation/runs/case-studies/20260830-182522/` and its semantic report under
+  `validation/comparisons/case-studies/20260830-182522/`.
 
 The staging core change is intentionally uncommitted pending review. It is a
 behavioral parity fix rather than result post-processing.

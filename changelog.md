@@ -54,3 +54,8 @@
   `validation/runs/case-studies/20260830-143435` with the corrected converter:
   20/20 notebooks passed and package verification reports 3693 artifacts with
   zero errors.
+- Preserved explicit v0.7 Scheme-level CLP-link tolerances in migrated v0.8
+  experiments and restored legacy species ordering in the plotting projection.
+  The affected 22-dataset publication fit now matches its reference cost and
+  1,886-CLP workload, with fitted-data normalized RMS `2.41e-8` and a
+  pixel-identical Fig. 7.
