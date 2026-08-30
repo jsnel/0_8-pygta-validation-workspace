@@ -17,3 +17,4 @@ Current evidence:
 | weighted-scale-drift.md | Is the 3D weighted scale/fitted-data drift caused by input translation, weighting, convergence, or a v0.8 defect? | Open; highest-priority numerical investigation |
 | rates-k3d2-identifiability.md | Is the enormous rates.k3d2 value genuinely unidentifiable or a v0.8 optimization/serialization defect? | Open; do not normalize or overwrite the value |
 | weighted-rmse-persistence.md | Should v0.8 persist weighted RMSE and default scale metadata, or is external derivation sufficient? | Open; likely schema/reporting issue |
+| kinetic-activation-normalization.md | Why do migrated coherent-artifact/DOAS datasets drift the dataset scales by an integer factor? | Root cause confirmed and fixed in the converter; re-migrated and re-run at `20260830-143435`. Core-side discrimination left to maintainers; the `77K_target_cells` single-evaluation difference is unexplained and open |

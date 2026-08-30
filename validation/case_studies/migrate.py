@@ -183,14 +183,22 @@ def activation(
     if len(compartments) != len(parameters):
         raise ValueError(f"Initial concentration arrays differ in {initial_label}")
     activation_compartments = dict(zip(compartments, parameters, strict=True))
+    # v0.8 requires coherent-artifact and damped-oscillation amplitudes to live in the
+    # activation compartments, but the v0.8 kinetic element normalizes its initial
+    # concentrations by the sum over *every* activation compartment. In v0.7 those
+    # amplitudes were not part of the initial concentration, so they never entered the
+    # normalization sum. Excluding them here preserves the legacy denominator.
+    non_kinetic_compartments: list[str] = []
     for element_label in dataset.get("megacomplex") or []:
         element = megacomplexes[element_label]
         element_type = element.get("type", document.get("default_megacomplex"))
         if element_type == "coherent-artifact":
             activation_compartments[element_label] = 1
+            non_kinetic_compartments.append(element_label)
         elif element_type == "damped-oscillation":
             for oscillation_label in element.get("labels") or []:
                 activation_compartments[oscillation_label] = 1
+                non_kinetic_compartments.append(oscillation_label)
     legacy_irf = document["irf"][irf_label]
     checked_keys(legacy_irf, IRF_KEYS, f"IRF {irf_label}")
     legacy_type = legacy_irf.get("type")
@@ -224,8 +232,12 @@ def activation(
         result["reciproke_global_axis"] = True
     if legacy_irf.get("force_index_dependent") and "dispersion_center" not in legacy_irf:
         raise ValueError(f"IRF {irf_label} uses unsupported force_index_dependent behavior")
-    if initial.get("exclude_from_normalize"):
-        result["not_normalized_compartments"] = initial["exclude_from_normalize"]
+    not_normalized = list(initial.get("exclude_from_normalize") or [])
+    not_normalized.extend(
+        label for label in non_kinetic_compartments if label not in not_normalized
+    )
+    if not_normalized:
+        result["not_normalized_compartments"] = not_normalized
     return result
 
 
@@ -244,6 +256,9 @@ def convert_model(document: dict[str, Any], source: Path) -> tuple[dict[str, Any
         "overrides": [],
         "constraint_ownership": [],
         "relation_and_penalty_experiments": [],
+        "clp_label_translations": [],
+        "inert_weight_dataset_selectors": [],
+        "inert_relations_and_penalties": [],
     }
     megacomplexes = document.get("megacomplex") or {}
     library: dict[str, Any] = {}
@@ -251,21 +266,37 @@ def convert_model(document: dict[str, Any], source: Path) -> tuple[dict[str, Any
     for label, item in megacomplexes.items():
         library[label], outputs[label] = element_from_megacomplex(label, item, document, log)
 
+    clp_label_translations: dict[str, str] = {}
+    for label, item in megacomplexes.items():
+        element_type = item.get("type", document.get("default_megacomplex"))
+        if element_type == "coherent-artifact":
+            for index in range(item["order"]):
+                legacy = f"coherent_artifact_{index + 1}_{label}"
+                migrated = f"{label}_derivative_{index}"
+                clp_label_translations[legacy] = migrated
+                log["clp_label_translations"].append(
+                    {"legacy": legacy, "migrated": migrated, "element": label}
+                )
+
     for constraint in document.get("clp_constraints") or []:
-        targets = constraint_targets(constraint)
+        legacy_targets = constraint_targets(constraint)
+        targets = [clp_label_translations.get(target, target) for target in legacy_targets]
         owners = []
         for label, labels in outputs.items():
             owned_targets = [target for target in targets if target in labels]
             if not owned_targets:
                 continue
             migrated_constraint = copy.deepcopy(constraint)
-            if isinstance(constraint.get("target"), list):
-                migrated_constraint["target"] = owned_targets
+            migrated_constraint["target"] = (
+                owned_targets if isinstance(constraint.get("target"), list) else owned_targets[0]
+            )
             library[label].setdefault("clp_constraints", []).append(migrated_constraint)
             owners.append(label)
         if not owners:
             raise ValueError(f"No v0.8 element owns constraint targets {targets} in {source}")
-        log["constraint_ownership"].append({"targets": targets, "elements": owners})
+        log["constraint_ownership"].append(
+            {"legacy_targets": legacy_targets, "targets": targets, "elements": owners}
+        )
 
     source_groups = document.get("dataset_groups") or {
         "default": {"residual_function": "variable_projection", "link_clp": True}
@@ -306,6 +337,15 @@ def convert_model(document: dict[str, Any], source: Path) -> tuple[dict[str, Any
 
     for weight in document.get("weights") or []:
         for dataset_label in weight.get("datasets") or []:
+            if dataset_label not in dataset_groups:
+                log["inert_weight_dataset_selectors"].append(
+                    {
+                        "dataset": dataset_label,
+                        "weight": {key: copy.deepcopy(value) for key, value in weight.items()},
+                        "reason": "The v0.7 data provider ignores weight selectors which do not match a declared dataset.",
+                    }
+                )
+                continue
             group_label = dataset_groups[dataset_label]
             migrated_weight = {key: copy.deepcopy(value) for key, value in weight.items() if key != "datasets"}
             experiments[group_label]["datasets"][dataset_label].setdefault("weights", []).append(
@@ -321,25 +361,39 @@ def convert_model(document: dict[str, Any], source: Path) -> tuple[dict[str, Any
         }
         for group_label, experiment in experiments.items()
     }
+    all_outputs = {output for labels in outputs.values() for output in labels}
     for old_key, new_key in (
         ("clp_relations", "clp_relations"),
         ("clp_penalties", "clp_penalties"),
         ("clp_area_penalties", "clp_penalties"),
     ):
         for item in document.get(old_key) or []:
-            source_label = str(item["source"])
-            target_label = str(item["target"])
+            source_label = clp_label_translations.get(str(item["source"]), str(item["source"]))
+            target_label = clp_label_translations.get(str(item["target"]), str(item["target"]))
             owners = [
                 group_label
                 for group_label, labels in group_outputs.items()
                 if source_label in labels and target_label in labels
             ]
             if not owners:
+                if source_label in all_outputs and target_label in all_outputs:
+                    log["inert_relations_and_penalties"].append(
+                        {
+                            "kind": new_key,
+                            "source": source_label,
+                            "target": target_label,
+                            "reason": "Both labels belong to library elements which are inactive in every declared dataset group.",
+                        }
+                    )
+                    continue
                 raise ValueError(
                     f"No experiment owns {old_key} relation {source_label}->{target_label} in {source}"
                 )
             for group_label in owners:
-                experiments[group_label].setdefault(new_key, []).append(copy.deepcopy(item))
+                migrated_item = copy.deepcopy(item)
+                migrated_item["source"] = source_label
+                migrated_item["target"] = target_label
+                experiments[group_label].setdefault(new_key, []).append(migrated_item)
             log["relation_and_penalty_experiments"].append(
                 {"kind": new_key, "source": source_label, "target": target_label, "experiments": owners}
             )
@@ -363,6 +417,8 @@ class NotebookMigrator(ast.NodeTransformer):
         self.notebook_dir = notebook_dir
         self.model_documents = {path.resolve(): document for path, document in model_documents.items()}
         self.constant_paths: dict[str, Path] = {}
+        self.string_constants: set[str] = set()
+        self.loaded_parameter_names: set[str] = set()
         self.scheme_models: dict[str, Path] = {}
         self.loaded_scheme_names: set[str] = set()
         self.scheme_controls: dict[str, dict[str, ast.expr]] = {}
@@ -402,7 +458,10 @@ class NotebookMigrator(ast.NodeTransformer):
                     self.constant_paths[target] = model
                     node.value = self.migrate_model_expression(node.value)
                     return node
+                self.string_constants.add(target)
             if isinstance(node.value, ast.Call) and isinstance(node.value.func, ast.Name):
+                if node.value.func.id == "load_parameters":
+                    self.loaded_parameter_names.add(target)
                 if node.value.func.id == "load_model" and node.value.args:
                     source_model = self.resolve_model_expression(node.value.args[0])
                     if source_model is not None:
@@ -431,7 +490,12 @@ class NotebookMigrator(ast.NodeTransformer):
             self.scheme_models[target] = source_model
         model_is_loaded_scheme = isinstance(model, ast.Name) and model.id in self.loaded_scheme_names
         model = self.migrate_model_expression(model)
-        if isinstance(parameters, ast.Constant) and isinstance(parameters.value, str):
+        if (
+            isinstance(parameters, ast.Constant)
+            and isinstance(parameters.value, str)
+            or isinstance(parameters, ast.Name)
+            and parameters.id in self.string_constants
+        ):
             parameters = ast.Call(func=ast.Name("load_parameters", ast.Load()), args=[parameters], keywords=[])
         controls = {name: value for name, value in keywords.items() if name in FIT_CONTROL_NAMES}
         self.scheme_controls[target] = controls
@@ -540,6 +604,8 @@ class NotebookMigrator(ast.NodeTransformer):
                     native = self.result_native.get(keyword.value.id)
                     if native:
                         keyword.value = ast.Name(native, ast.Load())
+        if isinstance(node.func, ast.Name) and node.func.id == "simulate":
+            node.func.id = "_case_study_simulate"
         return node
 
     def replace_old_model_access(self, source: str) -> str | None:
@@ -580,7 +646,18 @@ class NotebookMigrator(ast.NodeTransformer):
 
 HELPERS = '''\
 from glotaran.io import load_scheme
+from glotaran.simulation import simulate as _native_simulate
 from pyglotaran_extras.compat import convert
+
+
+def _case_study_simulate(scheme, dataset_label, parameters, coordinates, **kwargs):
+    """Call the v0.8 simulator for a named dataset in a migrated scheme."""
+    data_model = next(
+        experiment.datasets[dataset_label]
+        for experiment in scheme.experiments.values()
+        if dataset_label in experiment.datasets
+    )
+    return _native_simulate(data_model, scheme.library, parameters, coordinates, **kwargs)
 
 
 def _case_study_convert(native_result, scheme):
@@ -644,6 +721,16 @@ def _case_study_convert(native_result, scheme):
             for element in optimization_result.elements.values()
             if "compartment" in element.coords
         ]
+        for element_label, element in optimization_result.elements.items():
+            if "kinetic" not in element.coords:
+                continue
+            component_dimension = f"component_{element_label}"
+            dataset.coords[f"rate_{element_label}"] = element.coords["rate"].rename(
+                kinetic=component_dimension
+            )
+            dataset.coords[f"lifetime_{element_label}"] = element.coords["lifetime"].rename(
+                kinetic=component_dimension
+            )
         if kinetic_elements:
             species_concentration = xr.concat(
                 [
@@ -708,7 +795,15 @@ def _case_study_convert(native_result, scheme):
         if spectral_elements:
             species_spectra = xr.concat(
                 [
-                    element["concentrations"].squeeze(drop=True).rename(shape="species")
+                    element["concentrations"].rename(shape="species").squeeze(
+                        [
+                            dimension
+                            for dimension in element["concentrations"].dims
+                            if dimension != "shape"
+                            and element["concentrations"].sizes[dimension] == 1
+                        ],
+                        drop=True,
+                    )
                     for element in spectral_elements
                 ],
                 dim="species",
@@ -838,10 +933,18 @@ def main() -> int:
     parser.add_argument("--workspace", type=Path, default=Path.cwd())
     parser.add_argument("--config", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--slug")
     arguments = parser.parse_args()
     config = yaml.safe_load(arguments.config.read_text(encoding="utf-8"))
+    specifications = [
+        item
+        for item in config["repositories"]
+        if arguments.slug is None or item["slug"] == arguments.slug
+    ]
+    if not specifications:
+        parser.error(f"Unknown case-study slug: {arguments.slug}")
     repositories = []
-    for specification in config["repositories"]:
+    for specification in specifications:
         root = (
             arguments.workspace.resolve()
             / "temp"

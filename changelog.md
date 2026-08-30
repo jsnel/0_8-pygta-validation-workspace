@@ -30,3 +30,27 @@
 - Pinned staging pyglotaran fixes for kinetic activation normalization and v0.7-compatible signed, nearest-sample equal-area penalties, including xarray-axis and result-packaging regression coverage.
 - Re-ran the established 11-notebook/14-leaf validation: both branches completed 11/11 notebooks and the semantic report remained acceptable at 8 `PASS`, 6 documented `EXPECTED_DIFFERENCE`, and no regressions or missing artifacts.
 - Re-ran the report-only runtime benchmark with 12 successful workers, 150 timed samples, 15 summaries, and matching function-evaluation workloads.
+
+## 2026-08-30
+
+- Added `pub-2025-01-van_Stokkum_et_al` as the fourth external case-study
+  contract with isolated single-slug inventory, migration, execution,
+  comparison, and packaging support.
+- Extended the migration layer for coherent-artifact CLP label changes,
+  explicitly inert legacy selectors/relations, parameter path variables,
+  v0.8 simulation calls, and legacy spectral/lifetime result consumers.
+- Added opt-in fit-result capture to the isolated notebook runner so notebooks
+  with commented save calls still produce reloadable, hashable comparison
+  leaves without modifying source notebooks.
+- Hardened the comparator against false `PASS` results when both sides contain
+  zero result leaves, and included untracked staging migration files in source
+  patches and changed-file manifests.
+- Added focused case-study tooling and v0.8 CLP-relation regression tests.
+- Fixed the migration converter to exclude injected coherent-artifact and
+  damped-oscillation amplitudes from the v0.8 kinetic normalization sum, which
+  had drifted every free dataset scale in affected case studies by an integer
+  factor. See `issues/kinetic-activation-normalization.md`.
+- Re-migrated and re-ran all four external case studies under
+  `validation/runs/case-studies/20260830-143435` with the corrected converter:
+  20/20 notebooks passed and package verification reports 3693 artifacts with
+  zero errors.

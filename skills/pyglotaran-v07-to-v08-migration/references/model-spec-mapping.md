@@ -121,6 +121,7 @@ inventing a library shape.
 | `global_megacomplex_scale` | `global_element_scale` | Same explicit mapping for global elements. |
 | `initial_concentration` plus `initial_concentration.compartments/parameters` | `activations.<name>.compartments` | Zip the old two lists into a compartment-to-amplitude mapping. Ported examples use the name `irf`. |
 | `initial_concentration.exclude_from_normalize` | `activations.<name>.not_normalized_compartments` | Preserve the compartment labels. |
+| coherent-artifact element label; damped-oscillation labels | `activations.<name>.compartments` **and** `activations.<name>.not_normalized_compartments` | v0.8 requires these amplitudes inside the activation, but the kinetic element divides its initial concentrations by the sum over *every* activation compartment. In v0.7 they were never part of `initial_concentration`, so they must also be listed in `not_normalized_compartments` or the kinetic amplitudes are silently rescaled. See `issues/kinetic-activation-normalization.md`. |
 | `irf: <name>` plus top-level `irf.<name>` | `activations.<name>` | Inline the IRF definition in the dataset. |
 | `irf.<name>.type: gaussian` or spectral Gaussian | activation `type: gaussian` | Use `multi-gaussian` when multiple centers/widths are genuinely needed. |
 | `irf.<name>.backsweep_period` | activation `backsweep` | The v0.8 field stores the backsweep period under the shorter name. |

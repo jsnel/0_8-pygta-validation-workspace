@@ -25,3 +25,13 @@ repositories:
     notebooks:
       - 20230522PSI_TA_Scy6803target/20230521PSI_TA_Scy6803.ipynb
       - 20230522target_linking25streak_and_TA_datasets/20230522PSI_TA_streak.ipynb
+  - slug: pub-2025-01-van-stokkum-et-al
+    url: https://github.com/glotaran/pub-2025-01-van_Stokkum_et_al.git
+    rationale: >-
+      All three notebooks are publication analysis entry points and collectively
+      cover the 77 K MCL target analysis, 77 K whole-cell target analysis, and
+      room-temperature linked WT/dPSII/PB target analysis.
+    notebooks:
+      - 77K_target_MCL/20250201streak_target_supercomplex.ipynb
+      - 77K_target_cells/20250415streak_DG_WT_target_DA_FRL_PSIIdifferent.ipynb
+      - RT_target_WT_dPSII_cells_PB/20250414dPSII_PB580_540_532WT_FreePS_so_411rods.ipynb

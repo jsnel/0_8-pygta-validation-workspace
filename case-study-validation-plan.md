@@ -1,6 +1,6 @@
 # External Case-Study Visual-Evidence Preparation Plan
 
-Prepare reproducible v0.7.4 reference and v0.8 staging evidence for three
+Prepare reproducible v0.7.4 reference and v0.8 staging evidence for four
 external case-study repositories. The deliverable is a package for subsequent
 side-by-side human inspection. This work stops before subjective plot review,
 acceptance of scientific parity, or final classification of numerical
@@ -26,6 +26,7 @@ source notebooks, or transform results merely to force numerical agreement.
 - `https://github.com/ism200/pygta-protocol-streak-PS1`
 - `https://github.com/ism200/pygta-protocol-TA-PS1`
 - `https://github.com/glotaran/pub-2023-05-van_Stokkum_et_al`
+- `https://github.com/glotaran/pub-2025-01-van_Stokkum_et_al.git`
 
 Use a stable slug for each repository and keep its checkouts under:
 
@@ -210,7 +211,7 @@ A repository may instead stop at a demonstrated `BLOCKED_*` status when the
 manifest contains the failing command, complete log, preserved partial
 artifacts, and the narrowest evidence-backed blocker.
 
-The overall goal is complete when all three repositories are either
+The overall goal is complete when all four repositories are either
 `READY_FOR_VISUAL_REVIEW` or have a clearly documented `BLOCKED_*` package,
 the manifest has passed its path/hash checks, and any required regression tests
 have completed. Stop before opening plots for subjective comparison, declaring

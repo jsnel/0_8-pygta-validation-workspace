@@ -75,3 +75,112 @@ Generated [v07-v08-detailed.md](../comparisons/v07-v08-detailed.md) and its JSON
 - Scenario statuses and fitted-data metrics are unchanged from `v07-v08-20260712-175136.json`. The `rates.k3d2`, spectral-guidance decomposition, weighted 3D scale, weighted-RMSE persistence, and representation investigations therefore remain open; none was resolved by these fixes.
 - Core optimization/kinetic regression tests: `73 passed`. Validation-side regression tests: `12 passed`.
 - Runtime report `validation/benchmarks/v07-v08-runtime-20260829-162539Z/runtime.json`: `REPORT_ONLY`, 12 successful workers, 150 samples, 15 summaries, all function-evaluation workloads matched, and no workload warnings.
+
+## 2026-08-30 — 2025 publication case-study migration
+
+- Cloned `pub-2025-01-van_Stokkum_et_al` into isolated reference/staging
+  checkouts at source commit `9edbe177bf4671b735fba31ebc9b2b3df1885316`;
+  both started from tree `8807d2d4c96acc7ef1cdff8ffc0119c30b51551f`.
+  Reference remains on `main`; staging is on a local `staging` branch.
+- Migrated three publication notebooks and seven legacy model documents to
+  `_v08` copies. The migration records 24 explicit multi-k-matrix compositions,
+  four coherent-artifact CLP label translations, eight inert weight selectors,
+  and eight inert relations belonging only to disabled datasets/elements.
+- Added v0.8 caller handling for parameter-path variables and the changed
+  simulation API, plus compatibility projection for spectral shapes and kinetic
+  lifetime coordinates used by legacy plotting/display cells.
+- Confirmed and minimally fixed a v0.8 relation-resolution defect: unlike v0.7,
+  staging indexed relation labels even when absent from the local aligned CLP
+  axis. The focused core regression test passes (`2 passed`). See
+  `issues/clp-relation-missing-label.md`.
+- The captured clean run `validation/runs/case-studies/20260830-084447/` passed
+  3/3 reference and 3/3 staging notebooks, with seven load/dry-run checks and
+  seven real fits. Six fit-associated migrated schemes strictly load; four have
+  parameter-aware schemas and two spectral schemes are `NOT_PRACTICAL` for
+  static parameter pairing. The seventh migrated scheme is simulation-only and
+  loads during notebook execution.
+- All seven result leaves are present in the provisional semantic comparison.
+  Every leaf is `REVIEW_REQUIRED`: the two room-temperature fits meet the
+  primary fitted-data tolerance (worst normalized RMS about `1.67e-8`) but have
+  secondary evidence differences; the remaining five fits have worst
+  fitted-data normalized RMS values from `3.17e-4` to `2.67e-1`. The first
+  spectral fit also has a workload mismatch (`20` vs `25` evaluations).
+- No scientific parity, expected-difference/regression label, or subjective
+  visual acceptance is assigned. Runtime benchmarking was not run because the
+  case-study evidence records fit workloads directly and the shared benchmark
+  contract was unchanged.
+
+## 2026-08-30 — kinetic activation normalization inflated by injected amplitudes
+
+- Investigated the `pub-2023-05-van_Stokkum_et_al` TA target analysis, where the
+  staging initial cost was `30162.0` against the reference `869.51` while the
+  final costs nearly agreed and the migrated `plot_fitted_traces` figure
+  disagreed visibly with the publication figure.
+- Root cause: the v0.8 `KineticElement` divides its initial concentrations by
+  the sum over *every* `activation.compartments` entry. The migration must add
+  coherent-artifact element labels and damped-oscillation labels there, because
+  those v0.8 elements require them, so each injected `label: 1` inflated the
+  denominator by exactly `1.0` over the v0.7
+  `InitialConcentration.normalized()` denominator.
+- Measured effect: denominators `1.028 -> 3.028` for `670TR1` and
+  `1.000 -> 2.000` for `700TR1`. With `scale.670` fixed at 1 the estimated CLPs
+  absorbed the inflation (measured `2.9465`, predicted `2.945525`) and every
+  free `scale.*` parameter drifted by the reciprocal, up to a factor of three.
+  `pyglotaran_extras` divides plotted traces by `dataset_scale`, which is why
+  the drift was visible in the figure while the native `fitted_data` and
+  `residual` arrays still agreed with v0.7.
+- Remediation is migration-side only: `validation/case_studies/migrate.py` now
+  also lists every injected artifact/oscillation label under
+  `activations.<name>.not_normalized_compartments`. No pyglotaran core change.
+- Verification with the corrected activation: cost `780.2826936484729` at
+  `nfev=3` against the reference `780.28`, and `778.4181898707781` at `nfev=15`
+  against the reference `778.42`. Every optimized parameter matches v0.7.4 to
+  at most `2.945e-06` relative deviation, against factor-of-three deviations
+  before the fix.
+- Validation-side regression tests: `11 passed`, including the new
+  `test_convert_model_excludes_non_kinetic_amplitudes_from_normalization`.
+- Affected migrated models are enumerated in
+  `issues/kinetic-activation-normalization.md`: the 2023 publication model,
+  eight datasets of the 2025 `77K_target_cells` model, and ten
+  `pygta-protocol-ta-ps1` models. Those case studies need re-migration and a
+  fresh paired run before their evidence packages are valid.
+
+## 2026-08-30 — four-repository case-study re-migration and paired rerun
+
+- Re-migrated all four case studies with the corrected converter and re-ran
+  every reference/staging pair under timestamp `20260830-143435`.
+- Execution: 8/8 run sets exited 0 and 20/20 notebooks passed. Package
+  verification is `PASS` at 3693 checked artifacts with zero errors, and all
+  four repositories are `READY_FOR_VISUAL_REVIEW`.
+- Schema validation: every migrated scheme passes strict loading. Only the two
+  `pub-2025-01` spectral schemes remain `NOT_PRACTICAL` for parameter-aware
+  schema generation, unchanged from the previous handoff.
+- Change containment: a structural comparison of every regenerated scheme
+  against its pre-fix version yields 29 differences, all
+  `not_normalized_compartments` additions or extensions. Remaining textual
+  churn is YAML anchor expansion only. `pygta-protocol-streak-ps1`, which has
+  no coherent-artifact or damped-oscillation element, is structurally identical
+  to its committed schemes (0 differences) and serves as the control.
+- The re-migration also brought `pub-2023-05` and `pygta-protocol-ta-ps1`
+  notebooks onto the current converter, picking up the previously added
+  simulation adapter, kinetic lifetime/rate coordinates, and spectral squeeze
+  handling. Those two case studies had been migrated before those changes.
+- `pub-2023-05` `20230522PSI_TA_Scy6803target`: every optimized parameter now
+  matches v0.7.4 to at most `2.945e-06` relative, against factor-of-three
+  deviations before. The linked 25-dataset analysis improved from `1.7079` to
+  `4.3105e-02` worst fitted-data normalized RMS.
+- The primary fitted-data metric is blind to this defect class: the
+  `results/20230520` leaf reads `7.2284e-07` both before and after, because the
+  inflation is exactly compensable by the free dataset scales. Parameter
+  comparison, initial cost, and scale-divided trace plots are what expose it.
+- Still unexplained and separate: `pub-2025-01`
+  `77K_target_cells/case-study-results/fit-001-target_result1` remains at
+  `0.2673076675046294` worst fitted-data normalized RMS with `0.0` input
+  difference across all 22 datasets. Its single-evaluation cost moved only from
+  `449930.0` to `449440.0` against a reference `512450.0`, and optimality
+  differs by four orders of magnitude. See
+  `issues/kinetic-activation-normalization.md`.
+- All leaves remain provisional `REVIEW_REQUIRED`; no scientific parity,
+  expected-difference, or regression classification is assigned.
+- Validation-side regression tests: `21 passed`. No pyglotaran core change was
+  made in this pass.

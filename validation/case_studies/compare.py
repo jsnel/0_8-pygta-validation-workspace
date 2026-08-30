@@ -312,6 +312,15 @@ def compare(reference: Path, staging: Path, slug: str) -> dict[str, Any]:
     reference_leaves = result_roots(reference)
     staging_leaves = result_roots(staging)
     records = []
+    if not reference_leaves and not staging_leaves:
+        records.append(
+            {
+                "result": "[no-result-leaves]",
+                "status": "MISSING_ARTIFACT",
+                "reference_present": False,
+                "staging_present": False,
+            }
+        )
     for relative in sorted(set(reference_leaves) | set(staging_leaves)):
         if relative not in reference_leaves or relative not in staging_leaves:
             records.append(

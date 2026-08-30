@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import ast
 import base64
 import hashlib
 import importlib.metadata
@@ -73,6 +74,30 @@ def git(path: Path, *arguments: str) -> str | None:
         ).strip()
     except (OSError, subprocess.CalledProcessError):
         return None
+
+
+def source_patch(root: Path, base_revision: str) -> str:
+    tracked = subprocess.run(
+        ["git", "-C", str(root), "diff", "--binary", base_revision],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if tracked.returncode != 0:
+        raise RuntimeError(f"Unable to create tracked source patch: {tracked.stderr}")
+    parts = [tracked.stdout]
+    untracked = (git(root, "ls-files", "--others", "--exclude-standard") or "").splitlines()
+    for relative in untracked:
+        addition = subprocess.run(
+            ["git", "-C", str(root), "diff", "--binary", "--no-index", "--", "/dev/null", relative],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if addition.returncode not in {0, 1}:
+            raise RuntimeError(f"Unable to include untracked file {relative}: {addition.stderr}")
+        parts.append(addition.stdout)
+    return "".join(parts)
 
 
 def package_version(name: str) -> str | None:
@@ -169,15 +194,65 @@ def environment_metadata() -> dict[str, Any]:
     }
 
 
+def instrument_fit_results(notebook: Any) -> list[dict[str, str]]:
+    """Save every real fit result without modifying the source notebook on disk."""
+    captures: list[dict[str, str]] = []
+    notebook.cells.insert(
+        0,
+        nbformat.v4.new_code_cell(
+            "from glotaran.io import save_result as _case_study_save_result"
+        ),
+    )
+    for cell in notebook.cells[1:]:
+        if cell.cell_type != "code":
+            continue
+        tree = ast.parse(cell.source or "pass")
+        statements = []
+        for node in tree.body:
+            if not isinstance(node, ast.Assign) or len(node.targets) != 1:
+                continue
+            if not isinstance(node.targets[0], ast.Name) or not isinstance(node.value, ast.Call):
+                continue
+            function = node.value.func
+            is_optimize = (
+                isinstance(function, ast.Name)
+                and function.id == "optimize"
+                or isinstance(function, ast.Attribute)
+                and function.attr == "optimize"
+            )
+            if not is_optimize:
+                continue
+            if any(
+                keyword.arg == "dry_run"
+                and isinstance(keyword.value, ast.Constant)
+                and keyword.value.value is True
+                for keyword in node.value.keywords
+            ):
+                continue
+            target = node.targets[0].id
+            index = len(captures) + 1
+            capture_label = target.removesuffix("_native")
+            relative = f"case-study-results/fit-{index:03d}-{capture_label}/result.yaml"
+            captures.append({"variable": target, "result_path": relative})
+            statements.append(
+                f"_case_study_save_result(result={target}, result_path={relative!r}, allow_overwrite=True)"
+            )
+        if statements:
+            cell.source = f"{cell.source.rstrip()}\n\n" + "\n".join(statements)
+    return captures
+
+
 def execute_notebook(
     source: Path,
     executed: Path,
     inline_root: Path,
     stdout_path: Path,
     stderr_path: Path,
+    capture_fit_results: bool = False,
 ) -> dict[str, Any]:
     started = now()
     notebook = nbformat.read(source, as_version=4)
+    captured_fit_results = instrument_fit_results(notebook) if capture_fit_results else []
     error = None
     try:
         NotebookClient(
@@ -211,6 +286,7 @@ def execute_notebook(
         "stderr_log": str(stderr_path),
         "stderr_sha256": sha256(stderr_path),
         "inline_images": inline_images,
+        "captured_fit_results": captured_fit_results,
         "error": error,
     }
 
@@ -222,17 +298,9 @@ def run(arguments: argparse.Namespace) -> int:
         raise FileExistsError(f"Refusing to reuse output directory: {output_root}")
     worktree = output_root / "worktree"
     base_revision = arguments.base_revision or git(source_root, "rev-parse", "HEAD")
-    patch = subprocess.run(
-        ["git", "-C", str(source_root), "diff", "--binary", f"{base_revision}..HEAD"],
-        capture_output=True,
-        text=True,
-        check=False,
-    )
-    if patch.returncode != 0:
-        raise RuntimeError(f"Unable to create source patch: {patch.stderr}")
     patch_path = output_root / "source.diff.patch"
     patch_path.parent.mkdir(parents=True, exist_ok=True)
-    patch_path.write_text(patch.stdout, encoding="utf-8")
+    patch_path.write_text(source_patch(source_root, base_revision), encoding="utf-8")
     shutil.copytree(
         source_root,
         worktree,
@@ -288,6 +356,7 @@ def run(arguments: argparse.Namespace) -> int:
             output_root / "inline-images" / stem,
             output_root / "logs" / stem.with_suffix(".stdout.txt"),
             output_root / "logs" / stem.with_suffix(".stderr.txt"),
+            capture_fit_results=arguments.capture_fit_results,
         )
         record["path"] = relative.as_posix()
         manifest["notebooks"].append(record)
@@ -342,6 +411,7 @@ def main() -> int:
     parser.add_argument("--label", required=True)
     parser.add_argument("--base-revision")
     parser.add_argument("--notebook", action="append", required=True)
+    parser.add_argument("--capture-fit-results", action="store_true")
     return run(parser.parse_args())
 
 

@@ -260,14 +260,22 @@ def main() -> int:
     parser.add_argument("--workspace", type=Path, default=Path.cwd())
     parser.add_argument("--config", type=Path, required=True)
     parser.add_argument("--output-root", type=Path, required=True)
+    parser.add_argument("--slug")
     arguments = parser.parse_args()
     config = yaml.safe_load(arguments.config.read_text(encoding="utf-8"))
+    specifications = [
+        item
+        for item in config["repositories"]
+        if arguments.slug is None or item["slug"] == arguments.slug
+    ]
+    if not specifications:
+        parser.error(f"Unknown case-study slug: {arguments.slug}")
     report = {
         "version": 1,
         "configuration": str(arguments.config.resolve()),
         "repositories": [
             repository_inventory(arguments.workspace.resolve(), item)
-            for item in config["repositories"]
+            for item in specifications
         ],
     }
     arguments.output_root.mkdir(parents=True, exist_ok=True)

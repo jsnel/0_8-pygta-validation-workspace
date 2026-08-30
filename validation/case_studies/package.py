@@ -191,7 +191,14 @@ def build(args: argparse.Namespace) -> dict[str, Any]:
     ]
     reference_package = workspace / "temp/pyglotaran-main-dev"
     staging_package = workspace / "temp/pyglotaran-staging-dev"
-    for specification in config["repositories"]:
+    specifications = [
+        item
+        for item in config["repositories"]
+        if args.slug is None or item["slug"] == args.slug
+    ]
+    if not specifications:
+        raise ValueError(f"Unknown case-study slug: {args.slug}")
+    for specification in specifications:
         slug = specification["slug"]
         repository_root = run_root / slug
         reference_manifest_path = repository_root / "reference/manifest.json"
@@ -305,12 +312,7 @@ def build(args: argparse.Namespace) -> dict[str, Any]:
             "selected_entry_points": specification["notebooks"],
             "inventory": str((run_root / "inventory.json").resolve()),
             "migration_log": str((run_root / "migration-log.json").resolve()),
-            "changed_source_files": git(
-                staging_source,
-                "diff",
-                "--name-status",
-                f"{staging_manifest['source_base_revision']}..HEAD",
-            ).splitlines(),
+            "changed_source_files": staging_manifest["source_status"],
             "validation_side_changed_files": validation_side_changed_files,
             "tests": tests,
             "commands": {
@@ -445,6 +447,7 @@ def main() -> int:
     parser.add_argument("--workspace", type=Path, default=Path.cwd())
     parser.add_argument("--timestamp", required=True)
     parser.add_argument("--test-record", type=Path)
+    parser.add_argument("--slug")
     args = parser.parse_args()
     run_root = args.workspace.resolve() / "validation/runs/case-studies" / args.timestamp
     report = build(args)
