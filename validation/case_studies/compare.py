@@ -39,6 +39,9 @@ def document(root: Path) -> tuple[Path, dict[str, Any]]:
 
 
 def result_roots(root: Path) -> dict[str, Path]:
+    captured_root = root / "case-study-results"
+    if captured_root.is_dir():
+        root = captured_root
     leaves: dict[str, Path] = {}
     for name in ("result.yml", "result.yaml"):
         for path in root.rglob(name):
@@ -66,6 +69,10 @@ def load_v07(root: Path) -> dict[str, Any]:
     }
     for label, relative in (doc.get("data") or {}).items():
         source = root / relative
+        if not source.is_file():
+            labeled_source = root / f"{label}.nc"
+            if labeled_source.is_file():
+                source = labeled_source
         raw = xr.load_dataset(source)
         variables = {
             aliases[name]: canonicalize_array(value)[0]

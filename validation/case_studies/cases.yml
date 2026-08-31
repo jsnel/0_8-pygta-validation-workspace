@@ -35,3 +35,10 @@ repositories:
       - 77K_target_MCL/20250201streak_target_supercomplex.ipynb
       - 77K_target_cells/20250415streak_DG_WT_target_DA_FRL_PSIIdifferent.ipynb
       - RT_target_WT_dPSII_cells_PB/20250414dPSII_PB580_540_532WT_FreePS_so_411rods.ipynb
+  - slug: pfid
+    url: null
+    rationale: >-
+      The repository's sole notebook runs the paired global and guide-assisted
+      target analyses and contains the validated PFID plotting workflow.
+    notebooks:
+      - 20260830_20240827target_4pfid_lyco_all-plot-config_ksv.ipynb

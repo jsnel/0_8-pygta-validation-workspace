@@ -148,7 +148,10 @@ def repository_inventory(workspace: Path, specification: dict[str, Any]) -> dict
     staging = workspace / "temp" / "case-studies" / slug / "staging"
     source_commit = git(reference, "rev-parse", "HEAD")
     staging_revision = git(staging, "rev-parse", "HEAD")
-    staging_base = git(staging, "merge-base", source_commit, staging_revision) or source_commit
+    staging_base = (
+        git(staging, "merge-base", source_commit, staging_revision, check=False)
+        or staging_revision
+    )
     reference_tree = git(reference, "rev-parse", "HEAD^{tree}")
     staging_base_tree = git(staging, "rev-parse", f"{staging_base}^{{tree}}")
     tracked = git_lines(reference, "ls-files")

@@ -152,6 +152,24 @@ def element_from_megacomplex(
         }
         outputs = {f"{oscillation_label}_{part}" for oscillation_label in labels for part in ("cos", "sin")}
         return {"type": "damped-oscillation", "oscillations": oscillations}, outputs
+    if element_type == "pfid":
+        labels = item.get("labels") or []
+        frequencies = item.get("frequencies") or []
+        rates = item.get("rates") or []
+        if not (len(labels) == len(frequencies) == len(rates)):
+            raise ValueError(f"PFID oscillation arrays differ in {label}")
+        oscillations = {
+            oscillation_label: {"frequency": frequency, "rate": rate}
+            for oscillation_label, frequency, rate in zip(
+                labels, frequencies, rates, strict=True
+            )
+        }
+        outputs = {
+            f"{oscillation_label}_{part}"
+            for oscillation_label in labels
+            for part in ("cos", "sin")
+        }
+        return {"type": "pfid", "oscillations": oscillations}, outputs
     if element_type == "clp-guide":
         result = {"type": "clp-guide", "target": item["target"]}
         if "dimension" in item:
@@ -175,9 +193,22 @@ def activation(
     irf_label = dataset.get("irf")
     if initial_label is None and irf_label is None:
         return None
-    if initial_label is None or irf_label is None:
-        raise ValueError("An activation requires both legacy initial concentration and IRF")
-    initial = document["initial_concentration"][initial_label]
+    if irf_label is None:
+        raise ValueError("A legacy initial concentration requires an IRF activation")
+    if initial_label is None:
+        element_types = {
+            megacomplexes[element_label].get(
+                "type", document.get("default_megacomplex")
+            )
+            for element_label in dataset.get("megacomplex") or []
+        }
+        if "decay" in element_types:
+            raise ValueError(
+                "A kinetic dataset activation requires a legacy initial concentration"
+            )
+        initial: dict[str, Any] = {}
+    else:
+        initial = document["initial_concentration"][initial_label]
     compartments = initial.get("compartments") or []
     parameters = initial.get("parameters") or []
     if len(compartments) != len(parameters):
@@ -252,8 +283,6 @@ def convert_model(
     clp_link_tolerance: float | None = None,
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     checked_keys(document, MODEL_TOP_LEVEL_KEYS, str(source))
-    if any(not group.get("link_clp", True) for group in (document.get("dataset_groups") or {}).values()):
-        raise ValueError(f"Intentional unlinked CLP behavior in {source}")
     log: dict[str, Any] = {
         "source": str(source),
         "combined_k_matrices": [],
@@ -264,6 +293,7 @@ def convert_model(
         "inert_weight_dataset_selectors": [],
         "inert_relations_and_penalties": [],
         "clp_link_tolerance": clp_link_tolerance,
+        "unlinked_clp_splits": [],
     }
     megacomplexes = document.get("megacomplex") or {}
     library: dict[str, Any] = {}
@@ -308,6 +338,8 @@ def convert_model(
     }
     experiments: dict[str, Any] = {}
     for group_label, group in source_groups.items():
+        if not group.get("link_clp", True):
+            continue
         experiment = {
             "residual_function": group.get("residual_function", "variable_projection"),
             "datasets": {},
@@ -322,9 +354,27 @@ def convert_model(
     for dataset_label, item in (document.get("dataset") or {}).items():
         checked_keys(item, DATASET_KEYS, f"dataset {dataset_label}")
         group_label = item.get("group", "default")
-        if group_label not in experiments:
+        if group_label not in source_groups:
             raise ValueError(f"Dataset {dataset_label} references unknown group {group_label}")
-        dataset_groups[dataset_label] = group_label
+        group = source_groups[group_label]
+        if group.get("link_clp", True):
+            experiment_label = group_label
+        else:
+            experiment_label = f"{group_label}__{dataset_label}"
+            experiments[experiment_label] = {
+                "residual_function": group.get(
+                    "residual_function", "variable_projection"
+                ),
+                "datasets": {},
+            }
+            log["unlinked_clp_splits"].append(
+                {
+                    "dataset_group": group_label,
+                    "dataset": dataset_label,
+                    "experiment": experiment_label,
+                }
+            )
+        dataset_groups[dataset_label] = experiment_label
         element_labels = list(item.get("megacomplex") or [])
         migrated_dataset: dict[str, Any] = {"elements": element_labels}
         scales = item.get("megacomplex_scale")
@@ -335,12 +385,29 @@ def convert_model(
         migrated_activation = activation(item, document, megacomplexes)
         if migrated_activation is not None:
             migrated_dataset["activations"] = {"irf": migrated_activation}
+            if any(
+                megacomplexes[element_label].get(
+                    "type", document.get("default_megacomplex")
+                )
+                == "pfid"
+                for element_label in element_labels
+            ):
+                pfid_activation = copy.deepcopy(migrated_activation)
+                pfid_activation["type"] = "multi-gaussian"
+                for key in ("center", "width", "scale"):
+                    if key in pfid_activation and not isinstance(
+                        pfid_activation[key], list
+                    ):
+                        pfid_activation[key] = [pfid_activation[key]]
+                migrated_dataset["activation"] = pfid_activation
         for key in ("spectral_axis_inverted", "spectral_axis_scale"):
             if key in item:
                 migrated_dataset[key] = item[key]
-        experiments[group_label]["datasets"][dataset_label] = migrated_dataset
+        experiments[experiment_label]["datasets"][dataset_label] = migrated_dataset
         if "scale" in item:
-            experiments[group_label].setdefault("scale", {})[dataset_label] = item["scale"]
+            experiments[experiment_label].setdefault("scale", {})[
+                dataset_label
+            ] = item["scale"]
 
     for weight in document.get("weights") or []:
         for dataset_label in weight.get("datasets") or []:
@@ -422,7 +489,7 @@ def schema_documents(root: Path) -> dict[Path, dict[str, Any]]:
 def notebook_clp_link_tolerances(
     paths: list[Path], model_documents: dict[Path, dict[str, Any]]
 ) -> dict[Path, float]:
-    """Collect explicit v0.7 Scheme CLP-link tolerances by source model."""
+    """Collect explicit v0.7 Scheme/Project CLP-link tolerances by source model."""
     resolved_documents = {path.resolve() for path in model_documents}
     tolerances: dict[Path, float] = {}
     for path in paths:
@@ -443,11 +510,27 @@ def notebook_clp_link_tolerances(
                     continue
                 if not isinstance(node.value, ast.Call):
                     continue
-                function = node.value.func
-                if not isinstance(function, ast.Name) or function.id != "Scheme":
-                    continue
                 keywords = {keyword.arg: keyword.value for keyword in node.value.keywords if keyword.arg}
-                model = keywords.get("model", node.value.args[0] if node.value.args else None)
+                function = node.value.func
+                if isinstance(function, ast.Name) and function.id == "Scheme":
+                    model = keywords.get(
+                        "model", node.value.args[0] if node.value.args else None
+                    )
+                elif (
+                    isinstance(function, ast.Attribute)
+                    and isinstance(function.value, ast.Name)
+                    and function.value.id == "project"
+                    and function.attr == "optimize"
+                ):
+                    model_name = keywords.get("model_name")
+                    model = (
+                        ast.Constant(f"models/{model_name.value}.yml")
+                        if isinstance(model_name, ast.Constant)
+                        and isinstance(model_name.value, str)
+                        else None
+                    )
+                else:
+                    continue
                 tolerance = keywords.get("clp_link_tolerance")
                 if model is None or tolerance is None:
                     continue
@@ -507,12 +590,30 @@ class NotebookMigrator(ast.NodeTransformer):
     def visit_ImportFrom(self, node: ast.ImportFrom) -> ast.ImportFrom | None:
         if node.module in {"glotaran.optimization.optimize", "glotaran.project.scheme"}:
             return None
+        if node.module == "glotaran.project" and any(
+            alias.name == "Project" for alias in node.names
+        ):
+            names = [alias for alias in node.names if alias.name != "Project"]
+            return ast.ImportFrom(module=node.module, names=names, level=node.level) if names else None
         if node.module == "glotaran.io":
             names = [alias for alias in node.names if alias.name != "load_model"]
             return ast.ImportFrom(module=node.module, names=names, level=node.level) if names else None
         return node
 
     def visit_Assign(self, node: ast.Assign) -> ast.Assign | list[ast.stmt]:
+        if (
+            len(node.targets) == 1
+            and isinstance(node.targets[0], ast.Attribute)
+            and isinstance(node.targets[0].value, ast.Name)
+            and node.targets[0].value.id == "SAVING_OPTIONS_DEFAULT"
+            and node.targets[0].attr == "data_filter"
+        ):
+            node.targets[0] = ast.Subscript(
+                value=ast.Name("SAVING_OPTIONS_DEFAULT", ast.Load()),
+                slice=ast.Constant("data_filter"),
+                ctx=ast.Store(),
+            )
+            return self.generic_visit(node)
         if len(node.targets) == 1 and isinstance(node.targets[0], ast.Name):
             target = node.targets[0].id
             if isinstance(node.value, ast.Constant) and isinstance(node.value.value, str):
@@ -535,7 +636,152 @@ class NotebookMigrator(ast.NodeTransformer):
                     return self.convert_scheme_assignment(target, node.value)
                 if node.value.func.id == "optimize":
                     return self.convert_optimize_assignment(target, node.value)
+            if isinstance(node.value, ast.Call) and isinstance(
+                node.value.func, ast.Attribute
+            ):
+                function = node.value.func
+                if (
+                    isinstance(function.value, ast.Name)
+                    and function.value.id == "Project"
+                    and function.attr == "open"
+                ):
+                    return ast.Assign(
+                        targets=[ast.Name(target, ast.Store())],
+                        value=ast.Call(
+                            func=ast.Name("_CaseStudyDataStore", ast.Load()),
+                            args=[],
+                            keywords=[],
+                        ),
+                    )
+                if (
+                    isinstance(function.value, ast.Name)
+                    and function.value.id == "project"
+                    and function.attr == "optimize"
+                ):
+                    return self.convert_project_optimize_assignment(target, node.value)
         return self.generic_visit(node)
+
+    def convert_project_optimize_assignment(
+        self, target: str, call: ast.Call
+    ) -> list[ast.stmt]:
+        keywords = {keyword.arg: keyword.value for keyword in call.keywords if keyword.arg}
+        model_name = keywords.get("model_name")
+        parameters_name = keywords.get("parameters_name")
+        datasets = keywords.get("data_lookup_override")
+        if not (
+            isinstance(model_name, ast.Constant)
+            and isinstance(model_name.value, str)
+            and isinstance(parameters_name, ast.Constant)
+            and isinstance(parameters_name.value, str)
+            and datasets is not None
+        ):
+            raise ValueError(
+                f"Cannot migrate Project.optimize call assigned to {target}: "
+                "model_name, parameters_name, and data_lookup_override must be explicit"
+            )
+        source_model = (
+            self.notebook_dir / "models" / f"{model_name.value}.yml"
+        ).resolve()
+        if source_model not in self.model_documents:
+            raise ValueError(f"Unknown Project model {model_name.value!r}")
+        scheme = f"{target}_scheme"
+        parameters = f"{scheme}_parameters"
+        dataset_variable = f"{scheme}_datasets"
+        native = f"{target}_native"
+        self.scheme_models[scheme] = source_model
+        self.result_native[target] = native
+        controls = {
+            name: value
+            for name, value in keywords.items()
+            if name in FIT_CONTROL_NAMES
+        }
+        model_relative = migrated_path(source_model).relative_to(
+            self.notebook_dir
+        ).as_posix()
+        parameter_relative = (
+            Path("parameters") / f"{parameters_name.value}.csv"
+        ).as_posix()
+        optimize_keywords = [
+            ast.keyword(arg="parameters", value=ast.Name(parameters, ast.Load())),
+            ast.keyword(arg="datasets", value=ast.Name(dataset_variable, ast.Load())),
+            *[
+                ast.keyword(arg=name, value=value)
+                for name, value in controls.items()
+            ],
+        ]
+        dry_keywords = [
+            *copy.deepcopy(optimize_keywords),
+            ast.keyword(arg="dry_run", value=ast.Constant(True)),
+            ast.keyword(arg="verbose", value=ast.Constant(False)),
+            ast.keyword(arg="raise_exception", value=ast.Constant(True)),
+        ]
+        return [
+            ast.Assign(
+                targets=[ast.Name(scheme, ast.Store())],
+                value=ast.Call(
+                    func=ast.Name("load_scheme", ast.Load()),
+                    args=[ast.Constant(model_relative)],
+                    keywords=[],
+                ),
+            ),
+            ast.Assign(
+                targets=[ast.Name(parameters, ast.Store())],
+                value=ast.Call(
+                    func=ast.Name("load_parameters", ast.Load()),
+                    args=[ast.Constant(parameter_relative)],
+                    keywords=[],
+                ),
+            ),
+            ast.Assign(
+                targets=[ast.Name(dataset_variable, ast.Store())], value=datasets
+            ),
+            ast.Assign(
+                targets=[ast.Name(f"{scheme}_dry_run", ast.Store())],
+                value=ast.Call(
+                    func=ast.Attribute(
+                        ast.Name(scheme, ast.Load()), "optimize", ast.Load()
+                    ),
+                    args=[],
+                    keywords=dry_keywords,
+                ),
+            ),
+            ast.Expr(
+                ast.Call(
+                    func=ast.Name("print", ast.Load()),
+                    args=[
+                        ast.Constant(
+                            f"MIGRATION_VALIDATION scheme={scheme} load=PASS dry_run=PASS"
+                        )
+                    ],
+                    keywords=[],
+                )
+            ),
+            ast.Assign(
+                targets=[ast.Name(native, ast.Store())],
+                value=ast.Call(
+                    func=ast.Attribute(
+                        ast.Name(scheme, ast.Load()), "optimize", ast.Load()
+                    ),
+                    args=[],
+                    keywords=optimize_keywords,
+                ),
+            ),
+            ast.Expr(
+                ast.Call(
+                    func=ast.Name("_case_study_report_real_fit", ast.Load()),
+                    args=[ast.Name(native, ast.Load()), ast.Constant(scheme)],
+                    keywords=[],
+                )
+            ),
+            ast.Assign(
+                targets=[ast.Name(target, ast.Store())],
+                value=ast.Call(
+                    func=ast.Name("_case_study_convert", ast.Load()),
+                    args=[ast.Name(native, ast.Load()), ast.Name(scheme, ast.Load())],
+                    keywords=[],
+                ),
+            ),
+        ]
 
     def convert_scheme_assignment(self, target: str, call: ast.Call) -> list[ast.stmt]:
         keywords = {keyword.arg: keyword.value for keyword in call.keywords if keyword.arg}
@@ -708,9 +954,33 @@ class NotebookMigrator(ast.NodeTransformer):
 
 
 HELPERS = '''\
-from glotaran.io import load_scheme
+from glotaran.io import load_dataset, load_scheme
 from glotaran.simulation import simulate as _native_simulate
 from pyglotaran_extras.compat import convert
+
+
+class _CaseStudyDataStore:
+    """Minimal replacement for v0.7 Project data loading in migrated notebooks."""
+
+    def __init__(self):
+        self._datasets = {}
+
+    def import_data(self, data, dataset_name, allow_overwrite=False):
+        if dataset_name in self._datasets and not allow_overwrite:
+            raise ValueError(f"Dataset {dataset_name!r} already exists")
+        self._datasets[dataset_name] = load_dataset(data) if isinstance(data, (str, bytes)) else data
+
+    def load_data(self, dataset_name):
+        return self._datasets[dataset_name]
+
+
+def _case_study_report_real_fit(native_result, scheme_name):
+    success = native_result.optimization_info.success
+    status = "PASS" if success else "NON_SUCCESS"
+    print(
+        f"MIGRATION_VALIDATION scheme={scheme_name} real_fit={status} "
+        f"termination={native_result.optimization_info.termination_reason!r}"
+    )
 
 
 def _case_study_simulate(scheme, dataset_label, parameters, coordinates, **kwargs):
@@ -736,7 +1006,8 @@ def _case_study_convert(native_result, scheme):
                 dataset = dataset.drop_vars("irf_center").assign_coords(
                     irf_center=float(irf_center.values.flat[0])
                 )
-                compat_result.data[dataset_label] = dataset
+            dataset = dataset.reset_coords("irf_center")
+            compat_result.data[dataset_label] = dataset
         optimization_result = native_result.optimization_results[dataset_label]
         global_dimension = optimization_result.meta.global_dimension
         model_dimension = optimization_result.meta.model_dimension
@@ -917,7 +1188,34 @@ def _case_study_convert(native_result, scheme):
                 dimension for dimension in species_spectra.dims if dimension not in spectral_order
             )
             dataset["species_spectra"] = species_spectra.transpose(*spectral_order)
+        pfid_elements = [
+            (element_label, element)
+            for element_label, element in optimization_result.elements.items()
+            if "oscillation" in element.coords
+            and {"amplitudes", "phase", "sin_concentrations", "cos_concentrations"}
+            .issubset(element.data_vars)
+        ]
+        for element_label, element in pfid_elements:
+            prefix = "pfid" if len(pfid_elements) == 1 else f"{element_label}_pfid"
+            renames = {
+                "oscillation": prefix,
+                "oscillation_frequency": f"{prefix}_frequency",
+                "oscillation_rate": f"{prefix}_rate",
+            }
+            renames = {
+                old: new
+                for old, new in renames.items()
+                if old in element.coords or old in element.dims
+            }
+            converted_pfid = element.rename(renames)
+            dataset[f"{prefix}_associated_spectra"] = converted_pfid["amplitudes"]
+            dataset[f"{prefix}_phase"] = converted_pfid["phase"]
+            dataset[f"{prefix}_sin"] = converted_pfid["sin_concentrations"]
+            dataset[f"{prefix}_cos"] = converted_pfid["cos_concentrations"]
+        if "activation" in dataset.coords and "activation" not in dataset.dims:
+            dataset = dataset.reset_coords("activation")
         dataset.attrs["dataset_scale"] = optimization_result.meta.scale
+        dataset.attrs["scale"] = optimization_result.meta.scale
         compat_result.data[dataset_label] = dataset
     return compat_result
 

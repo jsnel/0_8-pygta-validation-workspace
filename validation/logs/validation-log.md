@@ -195,3 +195,78 @@ Generated [v07-v08-detailed.md](../comparisons/v07-v08-detailed.md) and its JSON
   expected-difference, or regression classification is assigned.
 - Validation-side regression tests: `21 passed`. No pyglotaran core change was
   made in this pass.
+
+## 2026-08-31 — PFID local case-study migration and paired validation
+
+- Added the local `pfid` repository as a case-study contract. Its independent
+  reference/staging Git histories have different commits
+  (`39976053cb29eebfdb25a2625b4b62249ab57314` and
+  `52082fb4e705117a0438c45bb3ff3dcb844c16d9`) but the same initial tree
+  `83d924beec8659bb7af7e8103530d2a947e7244d`; neither checkout has a remote.
+- Migrated the sole notebook and both legacy models to additive `_v08` files.
+  PFID label/frequency/rate arrays now use typed `oscillations`; PFID datasets
+  receive the required multi-Gaussian activation in addition to kinetic
+  activations. The global model's intentional `link_clp: false` groups are
+  preserved by splitting their datasets into independent v0.8 experiments
+  while retaining shared nonlinear optimization.
+- Added migration support for v0.7 `Project` data loading/optimization calls,
+  v0.8 saving-options syntax, IRF-only artifact/oscillation datasets, PFID
+  legacy plotting projection, and auxiliary xarray-coordinate cleanup.
+- Final paired run: `validation/runs/case-studies/20260830-235141/`. Both the
+  untouched v0.7.4 notebook and migrated v0.8 notebook pass end-to-end, each
+  with 58 extracted inline images and two captured result leaves. Both v0.8
+  schemes pass parameter-aware schema generation and strict loading; both dry
+  runs pass.
+- All 26 dataset inputs compare exactly. Worst fitted-data normalized RMS is
+  `1.67741866882088e-13` for the global fit and
+  `5.255481356856353e-13` for the guide-assisted target fit, far below the
+  ordinary `1e-6` threshold. Residual differences are numerical noise; matrix,
+  CLP, parameter-set, and result-layout differences remain secondary evidence.
+- Both fits use one evaluation on each branch. v0.7 reports success because it
+  includes the sole varying but inactive `alpha.1`; v0.8 resolves zero active
+  varying parameters and returns complete initial-fit results with the
+  non-success reason `zero-size array to reduction operation maximum which has
+  no identity`. The comparison therefore remains provisional
+  `REVIEW_REQUIRED`, and the package is `BLOCKED_STAGING` despite numerical
+  fitted-data agreement. See `issues/inactive-free-parameter-count.md`.
+- Focused case-study tooling tests: `16 passed`. No pyglotaran core or runtime
+  benchmark change was made.
+- The required established-baseline protection reran twice, at
+  `20260831-000137` and `20260831-000520`. Both attempts executed 11/11
+  notebooks on each branch and produced all 14 leaves, but both independently
+  classified `ex_spectral_guidance` as `REGRESSION`: fitted-data normalized RMS
+  `1.2572461877946428e-6` exceeds the unchanged `1e-6` contract. The PFID work
+  did not modify `validation/run_examples.py`, `validation/compare_results.py`,
+  baseline compatibility code, either pyglotaran tree, or the examples. The
+  tolerance was not relaxed. Full validation-side tests still pass (`26
+  passed`).
+
+## 2026-08-31 — PFID zero-active-parameter optimizer resolution
+
+- Confirmed that both PFID parameter tables contain exactly one varying
+  parameter, `alpha.1`, while neither migrated model references it. Model
+  resolution therefore correctly removes it from the v0.8 optimizer vector.
+- Reproduced the failure in a focused optimizer test: passing the resulting
+  empty vector to SciPy's trust-region solver raises
+  `zero-size array to reduction operation maximum which has no identity`.
+  v0.7 avoided that path only because it retained the unused parameter as a
+  flat optimizer direction.
+- Added a v0.8 optimizer path for zero active varying parameters. It evaluates
+  the model once without calling SciPy and returns `success: true`, zero free
+  parameters, zero Jacobian evaluations, an empty-column Jacobian, a `0 x 0`
+  covariance matrix, and termination reason `No free parameters to optimize.`
+- The regression test includes an unused varying parameter alongside fixed
+  model parameters, matching PFID's resolved parameter topology. The optimizer
+  test directory passes (`55 passed`). The full core suite reached `449 passed,
+  9 xfailed`; five unrelated result-path tests compare relative and absolute
+  temp paths differently under this workspace's forced pytest base directory.
+- Re-ran the migrated staging notebook at
+  `validation/runs/case-studies/20260831-224923/pfid/staging/`: the notebook
+  passed with 58 inline images, and both real-fit markers report `PASS` with
+  the explicit zero-parameter termination reason.
+- Compared the repaired staging capture with the original v0.7 reference. The
+  primary numerical evidence is unchanged: fitted-data normalized RMS
+  `1.67741866882088e-13` and `5.255481356856353e-13`, with one function
+  evaluation on each branch. Reactivating an arbitrary model parameter was
+  rejected because it would turn a validated reconstruction into a truncated
+  or moving optimization.

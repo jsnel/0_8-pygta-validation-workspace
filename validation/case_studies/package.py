@@ -145,6 +145,13 @@ def markdown(repository: dict[str, Any]) -> str:
             "",
         ]
     )
+    if repository["blockers"]:
+        lines.extend(["## Blockers", ""])
+        for blocker in repository["blockers"]:
+            lines.append(
+                f"- `{blocker['scheme']}`: {blocker['details']}"
+            )
+        lines.append("")
     return "\n".join(lines)
 
 
@@ -238,6 +245,15 @@ def build(args: argparse.Namespace) -> dict[str, Any]:
             notebook["fit_call_count"] for notebook in inventory_by_slug[slug]["notebooks"]
         )
         validation["schema_report"] = str(schema_json.resolve())
+        blockers = [
+            {
+                "kind": "optimizer_non_success",
+                "scheme": item["scheme"],
+                "details": item["checks"],
+            }
+            for item in validation["messages"]
+            if "real_fit=NON_SUCCESS" in item["checks"]
+        ]
         missing = comparison["summary"]["status_counts"]["MISSING_ARTIFACT"]
         reference_inline_images = sum(
             len(item["inline_images"]) for item in reference_manifest["notebooks"]
@@ -358,7 +374,7 @@ def build(args: argparse.Namespace) -> dict[str, Any]:
             },
             "known_mismatches": mismatches,
             "missing_artifacts": missing,
-            "blockers": [],
+            "blockers": blockers,
             "artifact_counts": {
                 "reference_notebooks": len(reference_manifest["notebooks"]),
                 "staging_notebooks": len(staging_manifest["notebooks"]),

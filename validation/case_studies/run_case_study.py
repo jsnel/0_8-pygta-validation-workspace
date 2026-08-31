@@ -200,7 +200,18 @@ def instrument_fit_results(notebook: Any) -> list[dict[str, str]]:
     notebook.cells.insert(
         0,
         nbformat.v4.new_code_cell(
-            "from glotaran.io import save_result as _case_study_save_result"
+            "\n".join(
+                [
+                    "from glotaran.io import SAVING_OPTIONS_DEFAULT as _case_study_default_saving_options",
+                    "from glotaran.io import save_result as _case_study_save_result",
+                    "if isinstance(_case_study_default_saving_options, dict):",
+                    "    _case_study_capture_saving_options = dict(_case_study_default_saving_options)",
+                    "    _case_study_capture_saving_options['data_filter'] = set()",
+                    "else:",
+                    "    from glotaran.io.interface import SavingOptions as _CaseStudySavingOptions",
+                    "    _case_study_capture_saving_options = _CaseStudySavingOptions(data_filter=None, report=False)",
+                ]
+            )
         ),
     )
     for cell in notebook.cells[1:]:
@@ -235,7 +246,8 @@ def instrument_fit_results(notebook: Any) -> list[dict[str, str]]:
             relative = f"case-study-results/fit-{index:03d}-{capture_label}/result.yaml"
             captures.append({"variable": target, "result_path": relative})
             statements.append(
-                f"_case_study_save_result(result={target}, result_path={relative!r}, allow_overwrite=True)"
+                f"_case_study_save_result(result={target}, result_path={relative!r}, "
+                "allow_overwrite=True, saving_options=_case_study_capture_saving_options)"
             )
         if statements:
             cell.source = f"{cell.source.rstrip()}\n\n" + "\n".join(statements)

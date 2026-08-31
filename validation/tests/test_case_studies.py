@@ -6,6 +6,7 @@ import nbformat
 
 from validation.case_studies.compare import compare
 from validation.case_studies.compare import result_file
+from validation.case_studies.compare import result_roots
 from validation.case_studies.migrate import convert_model
 from validation.case_studies.migrate import migrate_notebook
 from validation.case_studies.migrate import notebook_clp_link_tolerances
@@ -20,6 +21,17 @@ def test_result_file_accepts_both_supported_yaml_suffixes(tmp_path: Path) -> Non
     yaml_path.write_text("success: true\n", encoding="utf-8")
 
     assert result_file(tmp_path) == yaml_path
+
+
+def test_result_roots_prefers_instrumented_captures(tmp_path: Path) -> None:
+    captured = tmp_path / "case-study-results" / "fit-001"
+    incidental = tmp_path / "results" / "run-0001"
+    captured.mkdir(parents=True)
+    incidental.mkdir(parents=True)
+    (captured / "result.yaml").write_text("success: true\n", encoding="utf-8")
+    (incidental / "result.yaml").write_text("success: true\n", encoding="utf-8")
+
+    assert result_roots(tmp_path) == {"fit-001": captured}
 
 
 def test_notebook_pairs_resolves_variable_model_and_parameter_paths(tmp_path: Path) -> None:
@@ -122,6 +134,100 @@ def test_convert_model_excludes_non_kinetic_amplitudes_from_normalization(
     assert activation["not_normalized_compartments"] == ["artifact", "osc1"]
 
 
+def test_convert_model_maps_pfid_and_preserves_unlinked_clps(tmp_path: Path) -> None:
+    document = {
+        "dataset_groups": {
+            "default": {"residual_function": "variable_projection", "link_clp": False}
+        },
+        "dataset": {
+            "stokes": {
+                "megacomplex": ["pfid", "decay"],
+                "initial_concentration": "input",
+                "irf": "irf",
+            },
+            "anti_stokes": {
+                "megacomplex": ["pfid", "decay"],
+                "initial_concentration": "input",
+                "irf": "irf",
+            },
+        },
+        "megacomplex": {
+            "pfid": {
+                "type": "pfid",
+                "labels": ["osc1"],
+                "frequencies": ["osc.frequency"],
+                "rates": ["osc.rate"],
+            },
+            "decay": {"type": "decay", "k_matrix": ["km"]},
+        },
+        "k_matrix": {"km": {"matrix": {"(s1, s1)": "rates.k1"}}},
+        "initial_concentration": {
+            "input": {"compartments": ["s1"], "parameters": ["input.s1"]}
+        },
+        "irf": {
+            "irf": {
+                "type": "spectral-gaussian",
+                "center": "irf.center",
+                "width": "irf.width",
+            }
+        },
+    }
+
+    converted, log = convert_model(document, tmp_path / "model.yml")
+
+    assert converted["library"]["pfid"] == {
+        "type": "pfid",
+        "oscillations": {
+            "osc1": {"frequency": "osc.frequency", "rate": "osc.rate"}
+        },
+    }
+    assert set(converted["experiments"]) == {
+        "default__stokes",
+        "default__anti_stokes",
+    }
+    stokes = converted["experiments"]["default__stokes"]["datasets"]["stokes"]
+    assert stokes["activation"]["type"] == "multi-gaussian"
+    assert stokes["activation"]["center"] == ["irf.center"]
+    assert stokes["activation"]["width"] == ["irf.width"]
+    assert stokes["activations"]["irf"]["type"] == "gaussian"
+    assert len(log["unlinked_clp_splits"]) == 2
+
+
+def test_convert_model_allows_irf_only_nonkinetic_dataset(tmp_path: Path) -> None:
+    document = {
+        "dataset": {
+            "artifact_data": {
+                "megacomplex": ["artifact", "doas"],
+                "irf": "irf",
+            }
+        },
+        "megacomplex": {
+            "artifact": {"type": "coherent-artifact", "order": 1},
+            "doas": {
+                "type": "damped-oscillation",
+                "labels": ["osc1"],
+                "frequencies": ["osc.frequency"],
+                "rates": ["osc.rate"],
+            },
+        },
+        "irf": {
+            "irf": {
+                "type": "spectral-gaussian",
+                "center": "irf.center",
+                "width": "irf.width",
+            }
+        },
+    }
+
+    converted, _ = convert_model(document, tmp_path / "model.yml")
+
+    activation = converted["experiments"]["default"]["datasets"][
+        "artifact_data"
+    ]["activations"]["irf"]
+    assert activation["compartments"] == {"artifact": 1, "osc1": 1}
+    assert activation["not_normalized_compartments"] == ["artifact", "osc1"]
+
+
 def test_convert_model_records_inert_weight_dataset_selectors(tmp_path: Path) -> None:
     document = {
         "dataset": {"dataset1": {"megacomplex": ["kinetic"]}},
@@ -183,6 +289,49 @@ def test_migrate_notebook_loads_parameter_path_variable(tmp_path: Path) -> None:
     assert "_case_study_simulate(load_scheme(model_path), 'dataset'" in code
 
 
+def test_migrate_notebook_converts_project_optimize(tmp_path: Path) -> None:
+    model_path = tmp_path / "models" / "model.yml"
+    model_path.parent.mkdir(parents=True)
+    notebook_path = tmp_path / "analysis.ipynb"
+    notebook = nbformat.v4.new_notebook(
+        cells=[
+            nbformat.v4.new_code_cell(
+                "\n".join(
+                    [
+                        "from glotaran.project import Project",
+                        "SAVING_OPTIONS_DEFAULT.data_filter = []",
+                        "project = Project.open('')",
+                        "result = project.optimize(",
+                        "    model_name='model',",
+                        "    parameters_name='parameters',",
+                        "    data_lookup_override={'dataset': data},",
+                        "    maximum_number_function_evaluations=1,",
+                        ")",
+                    ]
+                )
+            )
+        ]
+    )
+    nbformat.write(notebook, notebook_path)
+
+    migrated = migrate_notebook(
+        path=notebook_path, model_documents={model_path: {}}
+    )
+    code = "\n".join(
+        cell.source
+        for cell in nbformat.read(migrated, as_version=4).cells
+        if cell.cell_type == "code"
+    )
+
+    assert "from glotaran.project import Project" not in code
+    assert "project = _CaseStudyDataStore()" in code
+    assert "SAVING_OPTIONS_DEFAULT['data_filter'] = []" in code
+    assert "result_scheme = load_scheme('models/model_v08.yml')" in code
+    assert "result_scheme_parameters = load_parameters('parameters/parameters.csv')" in code
+    assert "result_scheme_dry_run = result_scheme.optimize" in code
+    assert "result_native = result_scheme.optimize" in code
+
+
 def test_notebook_clp_link_tolerance_is_associated_with_model(tmp_path: Path) -> None:
     model_path = tmp_path / "models" / "example.yml"
     model_path.parent.mkdir()
@@ -222,6 +371,7 @@ def test_instrument_fit_results_skips_dry_runs() -> None:
     ]
     assert "result=result_native" in notebook.cells[1].source
     assert "result=dry" not in notebook.cells[1].source
+    assert "saving_options=_case_study_capture_saving_options" in notebook.cells[1].source
 
 
 def test_environment_metadata_is_populated() -> None:

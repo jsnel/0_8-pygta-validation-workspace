@@ -59,3 +59,31 @@
   The affected 22-dataset publication fit now matches its reference cost and
   1,886-CLP workload, with fitted-data normalized RMS `2.41e-8` and a
   pixel-identical Fig. 7.
+
+## 2026-08-31
+
+- Extended external case-study tooling for the local PFID repository: native
+  v0.8 PFID scheme mapping, intentional unlinked-CLP experiment splitting,
+  IRF-only artifact/oscillation datasets, and legacy `Project.optimize`
+  notebook migration.
+- Made isolated fit-result capture independent of notebook-global saving
+  filters and taught the comparator to prefer instrumented result leaves and
+  resolve v0.7 labeled NetCDF files.
+- Added PFID plotting compatibility fields and auxiliary-coordinate cleanup,
+  plus focused regression coverage (`16 passed`). The paired run at
+  `validation/runs/case-studies/20260830-235141/` passed both notebooks and
+  produced exact inputs with worst fitted-data normalized RMS `5.26e-13`.
+- Re-ran the established baseline twice after the shared case-study tooling
+  changes. Both branches executed 11/11 notebooks and produced 14/14 leaves,
+  while the unchanged semantic gate reproducibly reported
+  `ex_spectral_guidance` at `1.2572461877946428e-6` versus its `1e-6`
+  tolerance. No tolerance or baseline classification was changed.
+- Added an explicit zero-active-parameter optimizer path in staging. Resolved
+  models with no varying parameters now produce a successful, single-evaluation
+  reconstruction instead of passing a zero-column Jacobian to SciPy. The
+  regression covers PFID's sole varying-but-unused parameter and the optimizer
+  suite passes (`55 passed`).
+- Re-ran the migrated PFID notebook with the optimizer fix at
+  `validation/runs/case-studies/20260831-224923/pfid/staging/`. Both real fits
+  pass with zero active parameters; comparison against the v0.7 reference
+  retains fitted-data normalized RMS values of `1.68e-13` and `5.26e-13`.
