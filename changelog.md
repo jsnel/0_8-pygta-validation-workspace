@@ -1,5 +1,11 @@
 # Validation changelog
 
+## 2026-09-01
+
+- Added a reusable PEP 723 notebook process-tree profiler with optional public fit-call timing and optimizer workload metadata.
+- Profiled the migrated PFID notebook across five fresh-process runs: reference mean `69.94 s` and `3327.7 MiB` peak RSS; staging mean `180.05 s` and `5143.5 MiB` peak RSS.
+- Documented that staging performs two costly dry runs and reconstructs result data across three linked objectives; the exact peak-RSS allocation site remains unassigned.
+
 ## 2026-07-12
 
 - Ported the five main-only changes to the v0.8 staging architecture as individual commits on `feature/port-main-features-to-staging`, with implementation, tests, and a changelog entry in every commit.

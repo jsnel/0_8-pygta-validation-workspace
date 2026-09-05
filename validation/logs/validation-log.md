@@ -1,5 +1,12 @@
 # Validation log
 
+## 2026-09-01 - PFID runtime and memory profile
+
+- Added `validation/profile_notebook_memory.py`, a reusable PEP 723 profiler for isolated notebook execution, process-tree RSS sampling, plots, and optional public fit-call records.
+- Five-run evidence under `validation/benchmarks/memory-profile/summary.csv` measured reference mean duration `69.94 s` and peak RSS `3327.7 MiB`; staging measured `180.05 s` and `5143.5 MiB`.
+- Public fit records show two explicit staging dry runs followed by two real fits; every fit used one function evaluation. The dry runs and the staging multi-objective result reconstruction account for the observed runtime gap.
+- A coarse internal phase trace established three linked staging objectives and 17 dataset SVD operations for the larger fit. Its wall-clock values are excluded because the hooks materially changed runtime. The exact per-array source of the RSS delta remains open; no pyglotaran core change is proposed from this evidence.
+
 ## 2026-07-11 — baseline setup and first comparison
 
 - Initialized both orchestration worktrees at their recorded parent gitlinks and nested validation submodule pins.

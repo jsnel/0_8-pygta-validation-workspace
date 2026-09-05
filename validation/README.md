@@ -113,3 +113,25 @@ The report writes `runtime.json`, `runtime.csv`, `runtime.png`, and
 delta, and staging-over-main percentage change for every fit. Differences in
 function-evaluation counts are flagged as conditional workload comparisons;
 the benchmark is report-only and does not fail parity validation.
+
+## Profile notebook memory
+
+The standalone PEP 723 profiler compares any two notebooks. It clears stored
+outputs before each execution, runs each trace in a fresh process, samples the
+process-tree RSS every 50 ms, and repeats each notebook five times by default:
+
+```powershell
+uv run --script validation/profile_notebook_memory.py `
+  --main-notebook path/to/main-notebook.ipynb `
+  --staging-notebook path/to/staging-notebook.ipynb `
+  --main-python .venv-main/Scripts/python.exe `
+  --staging-python .venv-staging/Scripts/python.exe `
+  --output validation/benchmarks/memory-profile
+```
+
+Use `--runs` and `--interval-ms` to change the repetition count or sampling
+interval. The output contains raw CSV traces, `summary.csv`, a JSON manifest,
+one plot for each notebook, and a stacked comparison plot whose shared time
+axis is rounded up to the next 10-second increment. Add
+`--record-fit-calls` to record public fit durations and optimizer evaluation
+counts in each run's `fit-calls.json`.
