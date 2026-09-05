@@ -1,5 +1,12 @@
 version: 1
 repositories:
+  - slug: TestCaseInitConc
+    url: null
+    rationale: >-
+      User-selected initial-concentration target analysis: eight measured datasets
+      and six spectral guides in two linked groups, with a three-evaluation fit budget.
+    notebooks:
+      - 20260905target_State1_2guide_8comp4test.ipynb
   - slug: pygta-protocol-streak-ps1
     url: https://github.com/ism200/pygta-protocol-streak-PS1
     rationale: >-

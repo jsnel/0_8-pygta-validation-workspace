@@ -277,3 +277,17 @@ Generated [v07-v08-detailed.md](../comparisons/v07-v08-detailed.md) and its JSON
   evaluation on each branch. Reactivating an arbitrary model parameter was
   rejected because it would turn a validated reconstruction into a truncated
   or moving optimization.
+
+## 2026-09-05 — TestCaseInitConc reference preflight
+
+- Registered TestCaseInitConc in the external case-study contract; original
+  reference/staging tracked trees match despite distinct commits.
+- Untouched isolated reference execution is BLOCKED_REFERENCE at parameter CSV
+  loading: unsupported T-value column. No fit or fresh comparison was produced.
+- Recorded later x_scale, missing local-extras, syntax, stop-expression, and
+  absent legacy-model obstacles in issues/testcase-init-conc-reference.md.
+- Evidence: validation/runs/case-studies/20260905-initconc-02/;
+  the earlier instrumented AST failure is preserved under 20260905-initconc-01/.
+- Case-study tests: 16 passed with a workspace-local pytest base directory.
+- No source notebook, core implementation, baseline input, or existing generated
+  result changed. Migration remains pending a runnable reference definition.

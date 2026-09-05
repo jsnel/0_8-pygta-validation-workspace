@@ -93,3 +93,9 @@
   `validation/runs/case-studies/20260831-224923/pfid/staging/`. Both real fits
   pass with zero active parameters; comparison against the v0.7 reference
   retains fitted-data normalized RMS values of `1.68e-13` and `5.26e-13`.
+
+## 2026-09-05
+
+- Registered the local TestCaseInitConc external case study and documented its
+  blocked reference execution, source revisions, and follow-up requirements.
+  Existing common validation acceptance claims remain unchanged.
