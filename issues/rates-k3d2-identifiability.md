@@ -2,10 +2,11 @@
 
 ## Status
 
-Open. Fitted-data agreement is acceptable under the documented ill-conditioned
-threshold, but the parameter value is not reproducible and staging omits
-related derived parameters. This is a possible optimization or result-reporting
-defect, not a confirmed bug.
+Resolved for the maintained two-dataset example. The old example exposed an
+unnecessary `rates.k3d2` path and did not represent the supplied OC/COC target
+model. Both pinned example notebooks now use the refined target model with
+coherent-artifact elements and explicit CLP relations. No pyglotaran core or
+serialization fix was required.
 
 ## Question
 
@@ -17,7 +18,7 @@ assignment?
 Distinguish a scientifically unidentifiable parameter from a package defect.
 Never force the staging value to the v0.7 value.
 
-## Evidence
+## Historical evidence
 
 Source comparison: validation/comparisons/v07-v08-semantic.json.
 
@@ -39,6 +40,29 @@ Source comparison: validation/comparisons/v07-v08-semantic.json.
 The pattern indicates a weakly constrained parameter path, but does not
 exclude defects in bounds, positivity/log transforms, relation expansion,
 optimizer final-state handling, or persistence.
+
+## Resolution evidence
+
+The refined OC/COC model was applied to both example notebooks and executed in
+fresh isolated environments:
+
+- v0.7 and v0.8 use the meaningful dataset labels `oc_tol_data` and
+  `coc_tol_data`.
+- Both models contain fast and slow kinetic elements, coherent-artifact
+  elements, weights, and the two wavelength-bounded CLP relations.
+- Neither fresh optimized-parameter table contains `rates.k3d2`.
+- The paired focused comparison has worst fitted-data normalized RMS
+  `8.81932458660469e-06`, within the scenario tolerance of `2e-5`.
+- The largest remaining shared-parameter difference is `0.008214203879398103`
+  relative at `mc_scale.1`; this is bounded optimizer/scale drift in the
+  refined model, not the historical unbounded `rates.k3d2` path.
+
+Focused artifacts are retained under
+`validation/runs/k3d2-fix-focused/`, with the final one-scenario comparison
+report at `validation/comparisons/k3d2-fix-focused-final.json`. The initial
+all-scenarios comparison command
+also reports missing leaves because it intentionally contains only this
+scenario; those baseline failures do not describe the two-dataset result.
 
 ## Reproduction
 
@@ -68,7 +92,7 @@ Relevant inputs:
   study_transient_absorption/models/scheme_2d_co_co2.yml and
   parameters_2d_co_co2.yml
 
-## Investigation procedure
+## Historical investigation procedure (superseded)
 
 1. Normalize both schemes and verify:
    - parameter labels;
@@ -99,7 +123,7 @@ Relevant inputs:
    If b.1, b.2, and rates.k1sum are intentionally omitted by the v0.8 schema,
    implement reconstruction in validation compatibility first.
 
-## Focused tests to add
+## Focused tests considered
 
 Add validation-side tests that:
 
@@ -114,7 +138,7 @@ Add a v0.8 core regression test only if the profile or final-state test proves
 that staging reports a different identifiable solution or loses the actual
 optimizer final state.
 
-## Acceptance criteria
+## Historical acceptance criteria
 
 Classify as EXPECTED_DIFFERENCE if the objective profile is flat or practically
 indistinguishable over the reported range, fitted data and scientifically
@@ -132,11 +156,12 @@ or v0.8 serializes a value different from the optimizer final state.
 - Do not treat matching one scalar parameter as more important than the
   reconstructed fitted data without identifiability evidence.
 
-## 2026-08-29 rerun evidence
+## Historical 2026-08-29 rerun evidence
 
 The fresh comparison at
 `validation/comparisons/v07-v08-20260829-162539Z.json` reproduces the previous
 fitted-data metric (`1.3827653525142653e-05` worst normalized RMS), parameter
 difference, and `EXPECTED_DIFFERENCE` status. The kinetic activation and
 equal-area penalty fixes did not affect this scenario, so this investigation
-remains open with no change in classification.
+did not change the historical classification. It is superseded by the refined
+OC/COC model evidence above.

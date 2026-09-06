@@ -68,6 +68,16 @@ also passed 11/11 notebooks per branch and reproduced exactly the same spectral
 guidance RMS. Its report is `validation/comparisons/v07-v08-20260906-022046.json`.
 Changing thread counts did not resolve this difference; root cause remains open.
 
+Subsequent controlled investigation isolated the trigger to the current example
+commits fixing `rates.k5`, `rates.k6`, and `scale.2`. Restoring only those vary
+flags in memory reproduces the pinned baseline RMS exactly (`3.0325968790706684e-7`).
+The constrained fit is sensitive to compartment ordering and numerical runtime;
+matching both reproduces the native optimizer trajectory exactly. A smaller
+staging accepted-parameter restoration defect was also identified, but does not
+explain the threshold crossing. See [the full isolation evidence](spectral-guidance-current-tree.md).
+The current-tree scenario remains `REGRESSION`; no production fix or tolerance
+change was applied.
+
 Actual reference/staging core revisions are respectively
 `8f26be01d5a6ce63ec2556469ac3facc2d2cee68` and
 `51574847bd5cd0e98a6c301f3d557d6d4ed85cd2`. Example revisions are

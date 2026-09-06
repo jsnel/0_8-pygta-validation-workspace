@@ -1,5 +1,36 @@
 # Validation log
 
+## 2026-09-06 — refined OC/COC two-dataset model
+
+- Replaced the old two-dataset transient-absorption example model in both
+  pinned example notebooks with the supplied refined OC/COC model. The model
+  includes two fast/slow kinetic pairs, two coherent-artifact elements, the
+  existing spectral weights, and two wavelength-bounded CLP relations.
+- Fresh isolated execution passed for the v0.7 notebook and for the v0.8
+  dry-run, real fit, plotting, and native result save. The v0.7 run bypasses
+  the pre-existing `pyglotaran-extras/inspect/a_matrix.py` syntax error by
+  removing only the notebook cells that import that optional helper.
+- Focused paired artifacts are under
+  `validation/runs/k3d2-fix-focused/`. The semantic comparison reports worst
+  fitted-data normalized RMS `8.81932458660469e-06` against the `2e-5`
+  scenario tolerance. Input arrays are exact, both optimized parameter tables
+  omit `rates.k3d2`, and both persisted models retain the coherent-artifact
+  and CLP-relation topology.
+- The focused invocation of `compare_results.py` exits nonzero because the
+  run intentionally contains one of the 14 declared leaves; its two-dataset
+  record is the only model result being assessed here. The remaining shared
+  parameter difference is bounded at relative `0.008214203879398103` for
+  `mc_scale.1`.
+- The independent full staging runner completed `11/11` notebooks. The
+  validation-side suite completed with `31 passed, 1 skipped`; the only
+  warning was the existing Windows pytest cache permission warning.
+- The paired full 11-notebook handoff remains blocked before v0.7 notebook
+  execution because the pinned extras checkout cannot be imported: its
+  existing `inspect/a_matrix.py` contains an unterminated f-string. The
+  unrelated extras package was not modified.
+- The historical `rates.k3d2` issue is resolved for the maintained example and
+  no core or serialization change was made.
+
 ## 2026-09-01 - PFID runtime and memory profile
 
 - Added `validation/profile_notebook_memory.py`, a reusable PEP 723 profiler for isolated notebook execution, process-tree RSS sampling, plots, and optional public fit-call records.
@@ -319,3 +350,26 @@ Generated [v07-v08-detailed.md](../comparisons/v07-v08-detailed.md) and its JSON
 
 - One-thread repeat 20260906-022046: again 11/11 notebooks per branch and the same spectral-guidance RMS/regression. Final one-thread case-study evidence: validation/runs/case-studies/compat-20260906-022006; earlier partial run retained with interruption record. Real simulation/seeded-noise comparison against the native simulator passed exactly. Package also installed in workspace .venv-main/.venv-staging.
 - Final case-study result: all 12 consolidated notebooks PASSED; compatibility-verification.json verified 2,896 artifacts with zero errors. Publication simulation and PFID paths completed. Existing case-study scientific classifications were not changed.
+
+## 2026-09-06 — Spectral-guidance root-cause isolation
+
+- Current reference/staging cores `8f26be01` / `51574847`, examples `409af6f4` /
+  `4eed89ef`. The example commits fix `rates.k5`, `rates.k6`, and `scale.2` on
+  both branches, reducing the free parameter count from six to three.
+- Fresh native probes reproduce the supplied saved fitted arrays bit-for-bit
+  and the `1.2572461877946428e-6` regression. Restoring only the pinned vary
+  flags in memory reproduces `3.0325968790706684e-7` exactly with original budgets.
+- Matching runtime and compartment order yields bitwise native objective,
+  Jacobian and full optimizer-trajectory equality; NNLS substitution and
+  finite-difference experiments substantiate numerical-path sensitivity.
+- Found secondary staging retention of the last finite-difference parameter
+  vector during result construction; dataset1 effect `9.5191e-10` normalized
+  RMS, insufficient to explain the regression.
+- Diagnostic evidence: `validation/runs/spectral-isolation-20260906/` and
+  `validation/runs/spectral-isolation-20260906-final/`. Full investigation and
+  reproduction: `issues/spectral-guidance-current-tree.md`.
+- Added opt-in native parity test under `validation/tests/`; core/input trees
+  and environments untouched, no benchmark/full notebook rerun, no commit.
+- Focused test passed (`1 passed in 11.23 s`), exact paired-metric assertions
+  passed, and `git diff --check` passed. Machine-readable paired summary:
+  `validation/runs/spectral-isolation-20260906-final/summary.json`.

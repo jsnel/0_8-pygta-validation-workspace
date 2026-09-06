@@ -1,5 +1,36 @@
 # Validation changelog
 
+## 2026-09-06 — Refined OC/COC two-dataset example
+
+- Replaced the historical two-dataset transient-absorption model in both
+  pinned example notebooks with the supplied refined OC/COC model, including
+  fast/slow kinetic elements, coherent artifacts, weights, and explicit CLP
+  relations.
+- Removed optional v0.7 extras-only plotting cells that imported the existing
+  unterminated `a_matrix.py` helper; the native fit, result persistence, and
+  xarray plotting workflow remain executable.
+- Fresh focused runs completed the v0.7 notebook and the v0.8 dry-run, fit,
+  plotting, and persistence workflow. The paired result comparison reached a
+  worst fitted-data normalized RMS of `8.81932458660469e-06` under the `2e-5`
+  tolerance, and neither optimized parameter table contains `rates.k3d2`.
+- Closed the historical `rates.k3d2` example-level investigation. The focused
+  comparison retains `EXPECTED_DIFFERENCE` for bounded refined-model parameter
+  and fit drift; the full 14-leaf validation rerun remains separate work.
+
+## 2026-09-06 — Spectral-guidance isolation
+
+- Isolated the current-tree regression to the three newly fixed example
+  parameters and resulting optimizer-path sensitivity; restoring only pinned
+  vary flags reproduces the accepted `3.0325968790706684e-7` RMS exactly.
+- Added a process-isolated diagnostic and opt-in cross-engine trajectory test;
+  reference runtime plus reference compartment order restores exact objective,
+  Jacobian, and optimizer-trajectory parity.
+- Documented a secondary staging result-state restoration defect, whose fit
+  effect is too small to explain the regression. No core, notebook, dependency,
+  scenario tolerance, or acceptance classification was changed.
+- Evidence and source revisions: `issues/spectral-guidance-current-tree.md`;
+  paired probes: `validation/runs/spectral-isolation-20260906-final/`.
+
 ## 2026-09-01
 
 - Added a reusable PEP 723 notebook process-tree profiler with optional public fit-call timing and optimizer workload metadata.

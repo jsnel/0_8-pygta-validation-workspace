@@ -27,7 +27,7 @@ scenarios:
     result: study_transient_absorption/two_dataset_analysis
     fitted_data_normalized_rms: 2.0e-5
     difference_classification: EXPECTED_DIFFERENCE
-    difference_reason: rates.k3d2 is weakly identified; the fit remains within the documented ill-conditioned threshold.
+    difference_reason: refined OC/COC model removes the historical rates.k3d2 path; remaining parameter and fit drift is bounded within the scenario tolerance.
   - id: ex_spectral_constraints/no_penalties_first_run
     notebook: ex_spectral_constraints/ex_spectral_constraints.ipynb
     result: ex_spectral_constraints/no_penalties_first_run
