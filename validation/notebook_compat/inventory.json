@@ -1,0 +1,102 @@
+[
+  {
+    "path": "temp/case-studies/pfid/staging/20260830_20240827target_4pfid_lyco_all-plot-config_ksv_v08.ipynb",
+    "removed_helpers": [
+      "_CaseStudyDataStore",
+      "_case_study_report_real_fit",
+      "_case_study_simulate",
+      "_case_study_convert",
+      "_case_study_matrix_markdown"
+    ]
+  },
+  {
+    "path": "temp/case-studies/pub-2023-05-van-stokkum-et-al/staging/20230522PSI_TA_Scy6803target/20230521PSI_TA_Scy6803_v08.ipynb",
+    "removed_helpers": [
+      "_case_study_simulate",
+      "_case_study_convert",
+      "_case_study_matrix_markdown"
+    ]
+  },
+  {
+    "path": "temp/case-studies/pub-2023-05-van-stokkum-et-al/staging/20230522target_linking25streak_and_TA_datasets/20230522PSI_TA_streak_v08.ipynb",
+    "removed_helpers": [
+      "_case_study_simulate",
+      "_case_study_convert",
+      "_case_study_matrix_markdown"
+    ]
+  },
+  {
+    "path": "temp/case-studies/pub-2025-01-van-stokkum-et-al/staging/77K_target_cells/20250415streak_DG_WT_target_DA_FRL_PSIIdifferent_v08.ipynb",
+    "removed_helpers": [
+      "_case_study_simulate",
+      "_case_study_convert",
+      "_case_study_matrix_markdown"
+    ]
+  },
+  {
+    "path": "temp/case-studies/pub-2025-01-van-stokkum-et-al/staging/77K_target_MCL/20250201streak_target_supercomplex_v08.ipynb",
+    "removed_helpers": [
+      "_case_study_simulate",
+      "_case_study_convert",
+      "_case_study_matrix_markdown"
+    ]
+  },
+  {
+    "path": "temp/case-studies/pub-2025-01-van-stokkum-et-al/staging/RT_target_WT_dPSII_cells_PB/20250414dPSII_PB580_540_532WT_FreePS_so_411rods_v08.ipynb",
+    "removed_helpers": [
+      "_case_study_simulate",
+      "_case_study_convert",
+      "_case_study_matrix_markdown"
+    ]
+  },
+  {
+    "path": "temp/case-studies/pygta-protocol-streak-ps1/staging/streak/Step_1_and_2_PSI_CF9212_streak_global_target_dispWL_v08.ipynb",
+    "removed_helpers": [
+      "_case_study_simulate",
+      "_case_study_convert",
+      "_case_study_matrix_markdown"
+    ]
+  },
+  {
+    "path": "temp/case-studies/pygta-protocol-streak-ps1/staging/streak/Step_3_and_4_PSI_CF9212_streak_global_target_disp_v08.ipynb",
+    "removed_helpers": [
+      "_case_study_simulate",
+      "_case_study_convert",
+      "_case_study_matrix_markdown"
+    ]
+  },
+  {
+    "path": "temp/case-studies/pygta-protocol-ta-ps1/staging/PSI_TA_Scy6803GTA/step_1_target_PSI_TA_ideal_v08.ipynb",
+    "removed_helpers": [
+      "_case_study_simulate",
+      "_case_study_convert",
+      "_case_study_matrix_markdown"
+    ]
+  },
+  {
+    "path": "temp/case-studies/pygta-protocol-ta-ps1/staging/PSI_TA_Scy6803GTA/step_2_global_PSI_TA_SCy6803with_DOAS_v08.ipynb",
+    "removed_helpers": [
+      "_case_study_simulate",
+      "_case_study_convert",
+      "_case_study_matrix_markdown"
+    ]
+  },
+  {
+    "path": "temp/case-studies/pygta-protocol-ta-ps1/staging/PSI_TA_Scy6803GTA/step_3_target_PSI_TA_SCy6803_v08.ipynb",
+    "removed_helpers": [
+      "_case_study_simulate",
+      "_case_study_convert",
+      "_case_study_matrix_markdown"
+    ]
+  },
+  {
+    "path": "temp/case-studies/TestCaseInitConc/staging/20260905target_State1_2guide_8comp4test_validation_v08.ipynb",
+    "removed_helpers": [
+      "_CaseStudyDataStore",
+      "_case_study_report_real_fit",
+      "_case_study_simulate",
+      "_case_study_convert",
+      "_case_study_matrix_markdown"
+    ]
+  }
+]

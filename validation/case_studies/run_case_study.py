@@ -150,6 +150,13 @@ def extract_inline_images(notebook: Any, output_dir: Path) -> list[dict[str, Any
 
 
 def environment_metadata() -> dict[str, Any]:
+    import importlib.util
+
+    compatibility_spec = importlib.util.find_spec("pyglotaran_compat")
+    compatibility_path = (
+        Path(compatibility_spec.origin)
+        if compatibility_spec is not None and compatibility_spec.origin else None
+    )
     freeze = subprocess.run(
         [sys.executable, "-m", "pip", "freeze", "--all"],
         capture_output=True,
@@ -184,6 +191,11 @@ def environment_metadata() -> dict[str, Any]:
         "pyglotaran_extras": package_version("pyglotaran-extras"),
         "nbclient": package_version("nbclient"),
         "nbformat": package_version("nbformat"),
+        "notebook_compatibility": {
+            "version": package_version("pyglotaran-notebook-compat"),
+            "source": str(compatibility_path) if compatibility_path else None,
+            "sha256": sha256(compatibility_path) if compatibility_path else None,
+        },
         "pip_freeze_exit_code": freeze.returncode,
         "pip_freeze": freeze.stdout.splitlines(),
         "pip_freeze_stderr": freeze.stderr.splitlines(),

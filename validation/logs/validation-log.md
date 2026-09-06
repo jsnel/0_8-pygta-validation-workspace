@@ -291,3 +291,31 @@ Generated [v07-v08-detailed.md](../comparisons/v07-v08-detailed.md) and its JSON
 - Case-study tests: 16 passed with a workspace-local pytest base directory.
 - No source notebook, core implementation, baseline input, or existing generated
   result changed. Migration remains pending a runnable reference definition.
+
+## 2026-09-05 — TestCaseInitConc runnable migration and fresh comparison
+
+- Applied the user's authorization to omit development-only options and optional
+  private helpers. Added prepare_init_conc.py and portable reference/staging
+  notebook copies with concentration/SAS/DAS/normalized-DAS rows for both states.
+- Preserved the three-evaluation budget, parameter initialization, active NNLS
+  groups, and CLP link tolerance 0.5; omitted the unused empty default group.
+- Fresh evidence: validation/runs/case-studies/20260905-200057/;
+  comparison: validation/comparisons/case-studies/20260905-200057/TestCaseInitConc/.
+- Both notebooks passed. All 13 inputs agree exactly; all fitted-data comparisons
+  meet 1e-6, worst normalized RMS 2.53544703805126e-8. Evaluation counts 3/3.
+  Both runs reached the budget limit; no convergence claim is made.
+- REVIEW_REQUIRED remains for raw matrices, metadata, parameter coverage, and
+  strict residual checks. See issues/testcase-init-conc-reference.md for details,
+  source revisions, plotting dependency overlay, and the complete handoff.
+- 26 validation tests passed. No core/shared comparator/common scenario changes,
+  source resets, commits, or deletions of existing evidence were performed.
+
+## 2026-09-06 — Consolidated notebook compatibility
+
+- Shared implementation: validation/notebook_compat/pyglotaran_compat; 12 source notebooks under ignored temp/case-studies now use imports. Historical generated notebooks preserved.
+- Tests: 31 passed in staging; four applicable adapter tests passed in v0.7. Wheel built and editable package installed in both environments.
+- Common rerun 20260906-015900: 11/11 each branch, 14/14 leaves, 8 PASS / 5 EXPECTED_DIFFERENCE / 1 REGRESSION. Spectral guidance RMS 1.2572461877946428e-6 exceeds 1e-6; no tolerance adjustment. All 14 fresh leaves independently pass shared conversion/fitted-data preservation.
+- Case-study rerun: validation/runs/case-studies/compat-20260906-015928. Details, actual revisions, reference plotting overlay and source hashes: issues/notebook-compatibility-consolidation.md.
+
+- One-thread repeat 20260906-022046: again 11/11 notebooks per branch and the same spectral-guidance RMS/regression. Final one-thread case-study evidence: validation/runs/case-studies/compat-20260906-022006; earlier partial run retained with interruption record. Real simulation/seeded-noise comparison against the native simulator passed exactly. Package also installed in workspace .venv-main/.venv-staging.
+- Final case-study result: all 12 consolidated notebooks PASSED; compatibility-verification.json verified 2,896 artifacts with zero errors. Publication simulation and PFID paths completed. Existing case-study scientific classifications were not changed.

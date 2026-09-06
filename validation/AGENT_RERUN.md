@@ -3,6 +3,18 @@
 Use this after patching the staging v0.8 submodule. Run from the workspace root
 in PowerShell and use a new timestamped output directory every time.
 
+Install the shared notebook adapters once in each environment before running the
+compatibility tests or migrated case-study notebooks (this does not upgrade the
+existing scientific dependencies):
+
+```powershell
+uv pip install --python temp/pyglotaran-main-dev/.venv/Scripts/python.exe --no-deps -e validation/notebook_compat
+uv pip install --python temp/pyglotaran-staging-dev/.venv/Scripts/python.exe --no-deps -e validation/notebook_compat
+```
+
+See [notebook compatibility](notebook_compat/README.md) for the public adapters
+and migration of existing notebooks.
+
 ```powershell
 $stamp = Get-Date -Format "yyyyMMdd-HHmmss"
 $mainOut = "validation/runs/main/$stamp"

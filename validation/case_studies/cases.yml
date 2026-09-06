@@ -4,9 +4,10 @@ repositories:
     url: null
     rationale: >-
       User-selected initial-concentration target analysis: eight measured datasets
-      and six spectral guides in two linked groups, with a three-evaluation fit budget.
+      and five active spectral guides in two linked groups, with a three-evaluation
+      fit budget. A sixth supplied guide has no model entry and is inactive.
     notebooks:
-      - 20260905target_State1_2guide_8comp4test.ipynb
+      - 20260905target_State1_2guide_8comp4test_validation.ipynb
   - slug: pygta-protocol-streak-ps1
     url: https://github.com/ism200/pygta-protocol-streak-PS1
     rationale: >-

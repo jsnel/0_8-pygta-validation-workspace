@@ -99,3 +99,15 @@
 - Registered the local TestCaseInitConc external case study and documented its
   blocked reference execution, source revisions, and follow-up requirements.
   Existing common validation acceptance claims remain unchanged.
+
+- Completed the authorized TestCaseInitConc portable notebook adapter and v0.8
+  scheme migration, including public extras replacement plots. Fresh 13-dataset
+  fit comparisons meet 1e-6 (worst 2.54e-8); secondary evidence remains reviewable.
+  All 26 validation tests pass. Evidence run: 20260905-200057.
+
+## 2026-09-06 — Shared notebook compatibility
+
+- Extracted embedded case-study helpers into the installable validation/notebook_compat package; updated all 12 ignored source _v08 notebooks and future migration output to import it.
+- Added repeatable consolidation tooling, package/source provenance, documentation, and compatibility tests (31 staging tests; four applicable v0.7 tests).
+- Fresh common notebooks passed 11/11 per branch and direct conversion passed all 14 leaves. Current-tree spectral-guidance parity exceeds tolerance; see issues/notebook-compatibility-consolidation.md for exact evidence and revision drift.
+- Final consolidated case-study execution passed all 12 notebooks; verified 2,896 artifact hashes with no errors. Evidence: validation/runs/case-studies/compat-20260906-022006/compatibility-verification.json.

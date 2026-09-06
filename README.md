@@ -11,14 +11,25 @@ installations are independent.
 - 11 common validation notebooks run successfully on both branches.
 - The scenario contract contains 14 comparable result leaves.
 - The runtime benchmark covers 15 public fit invocations.
-- The latest semantic comparison is acceptable: 8 `PASS`, 6 documented
+- The last accepted baseline semantic comparison has 8 `PASS`, 6 documented
   `EXPECTED_DIFFERENCE`, 0 regressions, and 0 missing-artifact failures.
 - The latest normalized runtime benchmark has 150 timed samples with matching
   function-evaluation counts across branches. Runtime output is report-only.
 
+The September 6 consolidation rerun on the current checkouts still executes
+11/11 notebooks per branch, but reports one spectral-guidance `REGRESSION`
+(`1.257e-6` fitted-data RMS against `1e-6`). The current source revisions differ
+from the pinned contract. See the
+[consolidation evidence](issues/notebook-compatibility-consolidation.md) for
+the reports and exact revisions; this rerun is not an accepted parity baseline.
+
 Pinned commits, scenario mappings, and comparison tolerances are maintained in
 [`validation/scenarios.yml`](validation/scenarios.yml). The detailed comparison
 layer is external to pyglotaran under `validation/compatibility/`.
+
+Live notebook adapters are consolidated in the installable
+[`pyglotaran_compat` package](validation/notebook_compat/README.md). Migrated
+case-study notebooks import this shared implementation instead of embedding it.
 
 ## Completed setup
 
