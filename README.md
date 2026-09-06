@@ -23,6 +23,13 @@ from the pinned contract. See the
 [consolidation evidence](issues/notebook-compatibility-consolidation.md) for
 the reports and exact revisions; this rerun is not an accepted parity baseline.
 
+The later [runtime-optimization continuation](issues/staging-runtime-optimization-continuation.md)
+passes all 14 leaves against fresh baseline staging and restores the current-tree
+reference comparison to 8 `PASS`, 6 `EXPECTED_DIFFERENCE`, and zero regressions.
+It reduces PFID reconstruction overhead while preserving current staging results
+exactly. These measurements use the already upgraded installed scientific stack;
+its dependency lock mismatch and inherited correctness concerns remain documented.
+
 Pinned commits, scenario mappings, and comparison tolerances are maintained in
 [`validation/scenarios.yml`](validation/scenarios.yml). The detailed comparison
 layer is external to pyglotaran under `validation/compatibility/`.

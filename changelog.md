@@ -1,5 +1,25 @@
 # Validation changelog
 
+## 2026-09-06 — Runtime optimization continuation
+
+- Replaced xarray scalar iteration with plain NumPy label extraction in staging
+  amplitude reconstruction at core `20020378` plus an uncommitted focused patch.
+  No numerical operation, dependency, production input or solver setting changed.
+- Fresh paired public-call benchmarks show PFID real-call mean reductions of
+  42% and 67%, and spectral guidance 6.4%. Two-dataset overall timing and peak
+  memory show no convincing improvement. Full distributions are retained.
+- Native original and controlled result snapshots match exactly; both controlled
+  standard workloads converge after four genuine steps. PFID has zero free
+  parameters, so nonlinear controlled steps require a prohibited problem change.
+- Fresh baseline/optimized/reference suites pass 11/11 notebooks each; staging
+  self-comparison passes all 14 leaves with zero fitted-array RMS difference.
+  Reference comparison has 8 PASS, 6 EXPECTED_DIFFERENCE and zero regressions.
+- Validation tests: 36 passed, 1 skipped; focused staging core tests: 35 passed.
+  Corrected the inherited handover's acceptance overstatement and documented
+  original budget exhaustion, an inherited Gaussian-shift defect and lock drift.
+- Evidence: `validation/runs/runtime-continuation-20260906/`; full handoff:
+  `issues/staging-runtime-optimization-continuation.md`. No commits made.
+
 ## 2026-09-06 — Refined OC/COC two-dataset example
 
 - Replaced the historical two-dataset transient-absorption model in both

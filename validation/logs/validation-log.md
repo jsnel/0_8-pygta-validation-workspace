@@ -1,5 +1,34 @@
 # Validation log
 
+## 2026-09-06 — Staging runtime continuation
+
+- Baseline core `20020378e3b18e4d46020135bbf6959eacc9eb18`, reference core
+  `8f26be01d5a6ce63ec2556469ac3facc2d2cee68`; existing NumPy 2.2.6 / SciPy 1.15.3 /
+  Numba 0.63.1 retained. One uncommitted core change extracts ordinary labels
+  before the linked amplitude gather, eliminating xarray scalar equality overhead.
+- Evidence root `validation/runs/runtime-continuation-20260906/`: fresh paired
+  subprocess runs, three PFID timed repetitions, five original standard repetitions,
+  three controlled standard repetitions, each with a separate warmup and fixed
+  one-thread settings. Public-call timings exclude setup, plotting and persistence.
+- PFID real-call means 15.553 → 8.959 s and 37.173 → 12.312 s; spectral guidance
+  1.934 → 1.810 s. Two datasets 1.100 → 1.096 s is within timing variation. Large
+  PFID variance and unchanged peak RSS are included in the report.
+- All native PFID, standard and controlled snapshots compare exactly, including
+  result metadata and histories. Controlled standard cases each take four nonzero
+  accepted steps and converge on xtol; original standard calls exhaust their
+  unchanged budgets. Original PFID has no free parameters, preventing a nonlinear
+  multi-step variant under the contract.
+- `full-baseline/`, `full-optimized/`, `full-main/`: 11/11 notebooks each.
+  `staging-self.json`: 14/14 PASS; 28 fitted arrays with normalized RMS zero.
+  `main-staging.json`: 8 PASS, 6 EXPECTED_DIFFERENCE, zero regressions/failures;
+  spectral-guidance dataset1 RMS `2.4928654061006497e-7` under the unchanged gate.
+- Final validation tests: 36 passed, 1 skipped; focused objective/activation/PFID
+  core tests: 35 passed. Source manifests, workload audit, exact comparisons,
+  distributions and command logs retained; no generated files staged or deleted.
+- Handoff: `issues/staging-runtime-optimization-continuation.md`. Inherited
+  pre-upgrade staging acceptance, Gaussian shift handling and dependency lock
+  mismatch remain separate issues. No commit was made.
+
 ## 2026-09-06 — refined OC/COC two-dataset model
 
 - Replaced the old two-dataset transient-absorption example model in both

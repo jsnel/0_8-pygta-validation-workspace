@@ -1,7 +1,13 @@
 # v0.8 staging runtime optimization — handover
 
-Status: **partially complete, correctness gate passed on the primary metric (fitted data)**.
-Paused for token budget. This document is the pick-up point.
+Status: **original handover retained; its correctness acceptance claim is not established**.
+The continuation found that `1.10e-6` exceeds the spectral-guidance `1e-6` gate,
+and that the PFID timings below include cProfile and tracemalloc overhead.
+See [the continuation evidence](staging-runtime-optimization-continuation.md)
+for fresh, unprofiled paired measurements and acceptance results.
+
+The inherited edits were subsequently committed by the user at core `20020378`
+and workspace `44def7a`; they were clean at the start of the continuation.
 
 ## User-approved contract decisions (do not re-litigate)
 
@@ -76,11 +82,13 @@ Report: `validation/comparisons/staging-self-20260906-perf.json`.
 Comparator: `validation/compare_staging_self.py` (loads both trees via the v0.8
 compatibility loader, applies `scenarios.yml` tolerances).
 - 11/11 optimized notebooks passed (`validation/runs/staging-optimized/20260906-perf`).
-- **fitted_data normalized-RMS passes the scenario gate for all 13 comparable scenarios**;
-  worst is ex_spectral_guidance dataset1 = 1.10e-6 (≈ the 1e-6 default gate; that scenario
-  has documented non-identifiable representation freedom). All others 1e-9…1e-16.
+- The historical report has 13 comparable scenarios. The reported worst fitted-data
+  normalized RMS, ex_spectral_guidance dataset1 = `1.10e-6`, **fails** the `1e-6`
+  gate. Non-identifiable representation freedom does not waive the fitted-data gate.
+  The handover reported all other fitted-data differences as 1e-9…1e-16.
 - `study_transient_absorption/two_dataset_analysis` flagged "missing" by the self-comparator —
-  a **loader artifact** (its datasets are stored in a different layout), not a real difference.
+  differently named datasets occur in the two trees. Calling this a loader artifact
+  without fresh matched-input evidence was not justified.
 - ex_spectral_guidance parameters differ (max_rel ~9e-3) — consistent with the documented
   non-identifiability; fitted data is the gate.
 
