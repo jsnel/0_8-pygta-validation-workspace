@@ -1,0 +1,612 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Validation report for the staging amplitude-label optimization, 2026-09-06.">
+  <title>Staging runtime optimization continuation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600&family=IBM+Plex+Sans:ital,wght@0,400;0,600;1,400&display=swap">
+  <style>
+    :root {
+      color-scheme: light;
+      --paper: #f3f5f7;
+      --panel: #ffffff;
+      --panel-2: #eaeef2;
+      --ink: #161c24;
+      --muted: #5a6472;
+      --line: #d5dbe2;
+      --line-strong: #b9c2cc;
+      --accent: #2a78d6;
+      --link: #1c5cab;
+      --bar-fill: #2a78d6;
+      --bar-track: #cde2fb;
+      --good: #0ca30c;
+      --good-text: #006300;
+      --warn: #fab219;
+      --warn-text: #6f4d00;
+      --bad: #d03b3b;
+      --bad-text: #a02727;
+      --sans: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+      --cond: "IBM Plex Sans Condensed", "Segoe UI", system-ui, sans-serif;
+      --mono: "IBM Plex Mono", "Cascadia Code", Consolas, monospace;
+      --bar-h: 52px;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        color-scheme: dark;
+        --paper: #0f1318;
+        --panel: #161b22;
+        --panel-2: #1e252e;
+        --ink: #e6eaef;
+        --muted: #9aa4b0;
+        --line: #2a323c;
+        --line-strong: #3a4450;
+        --accent: #3987e5;
+        --link: #6da7ec;
+        --bar-fill: #3987e5;
+        --bar-track: #22334a;
+        --good: #0ca30c;
+        --good-text: #4cc94c;
+        --warn: #fab219;
+        --warn-text: #f2c25a;
+        --bad: #e66767;
+        --bad-text: #ef8a8a;
+      }
+    }
+    :root[data-theme="dark"] {
+      color-scheme: dark;
+      --paper: #0f1318;
+      --panel: #161b22;
+      --panel-2: #1e252e;
+      --ink: #e6eaef;
+      --muted: #9aa4b0;
+      --line: #2a323c;
+      --line-strong: #3a4450;
+      --accent: #3987e5;
+      --link: #6da7ec;
+      --bar-fill: #3987e5;
+      --bar-track: #22334a;
+      --good: #0ca30c;
+      --good-text: #4cc94c;
+      --warn: #fab219;
+      --warn-text: #f2c25a;
+      --bad: #e66767;
+      --bad-text: #ef8a8a;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    [hidden] { display: none !important; }
+    body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font: 400 15px/1.5 var(--sans);
+    }
+    a { color: var(--link); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+    button, input { font: inherit; color: inherit; }
+    button { cursor: pointer; }
+    :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    code {
+      padding: .05em .3em;
+      border-radius: 3px;
+      background: var(--panel-2);
+      font-family: var(--mono);
+      font-size: .86em;
+      overflow-wrap: anywhere;
+    }
+    pre {
+      margin: .6rem 0;
+      padding: .75rem .9rem;
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      background: var(--panel);
+      font-family: var(--mono);
+      font-size: .8rem;
+      line-height: 1.55;
+    }
+    pre code { padding: 0; background: transparent; font-size: inherit; }
+    pre .cm { color: var(--muted); }
+    strong { font-weight: 600; }
+    p { margin: 0 0 .65rem; }
+    ul { margin: .4rem 0 .8rem; padding-left: 1.2rem; }
+    li { margin: .3rem 0; }
+    li::marker { color: var(--muted); }
+    h1, h2, h3 { text-wrap: balance; font-family: var(--cond); font-weight: 600; }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      height: var(--bar-h);
+      padding: 0 clamp(.9rem, 2.5vw, 2rem);
+      border-bottom: 1px solid var(--line);
+      background: var(--panel);
+    }
+    .brand { display: flex; align-items: center; gap: .6rem; font-family: var(--cond); font-size: .82rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; white-space: nowrap; }
+    .brand-mark { width: 4px; height: 18px; background: var(--accent); border-radius: 1px; }
+    .brand-sub { color: var(--muted); font-weight: 500; }
+    .top-actions { display: flex; align-items: center; gap: .45rem; }
+    .search {
+      width: min(28vw, 260px);
+      min-width: 150px;
+      padding: .35rem .6rem;
+      border: 1px solid var(--line-strong);
+      border-radius: 4px;
+      background: var(--paper);
+      font-size: .86rem;
+    }
+    .search:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent); }
+    .tool {
+      padding: .35rem .65rem;
+      border: 1px solid var(--line-strong);
+      border-radius: 4px;
+      background: var(--panel);
+      font-size: .82rem;
+    }
+    .tool:hover { border-color: var(--accent); }
+
+    .shell { display: grid; grid-template-columns: 210px minmax(0, 1fr); max-width: 1320px; margin: 0 auto; }
+    .sidebar {
+      position: sticky;
+      top: var(--bar-h);
+      align-self: start;
+      max-height: calc(100vh - var(--bar-h));
+      overflow: auto;
+      padding: 1.25rem .9rem 1.25rem 1.1rem;
+      border-right: 1px solid var(--line);
+      font-size: .82rem;
+    }
+    .side-label { margin: 0 0 .45rem; color: var(--muted); font-family: var(--cond); font-size: .7rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; }
+    .side-nav { display: grid; gap: 1px; }
+    .side-nav a { padding: .28rem .55rem; border-left: 2px solid transparent; color: var(--muted); line-height: 1.3; text-decoration: none; }
+    .side-nav a:hover { color: var(--ink); }
+    .side-nav a.active { border-left-color: var(--accent); color: var(--ink); background: color-mix(in srgb, var(--accent) 9%, transparent); }
+    .side-meta { display: grid; grid-template-columns: max-content 1fr; gap: .3rem .6rem; margin: 1.25rem 0 0; padding-top: .9rem; border-top: 1px solid var(--line); font-size: .76rem; }
+    .side-meta dt { color: var(--muted); }
+    .side-meta dd { margin: 0; min-width: 0; }
+
+    main { min-width: 0; max-width: 1040px; padding: 1.6rem clamp(1rem, 3vw, 2.75rem) 3.5rem; }
+    .masthead { margin-bottom: 1.25rem; }
+    .eyebrow { margin: 0 0 .25rem; color: var(--muted); font-family: var(--cond); font-size: .76rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; }
+    h1 { margin: 0 0 .5rem; font-size: clamp(1.6rem, 3vw, 2rem); letter-spacing: -.01em; line-height: 1.15; }
+    .verdict { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem; margin-bottom: .6rem; }
+    .lede { max-width: 72ch; font-size: 1.02rem; }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: .3rem;
+      padding: .08rem .45rem;
+      border: 1px solid;
+      border-radius: 3px;
+      font-family: var(--cond);
+      font-size: .7rem;
+      font-weight: 600;
+      letter-spacing: .06em;
+      line-height: 1.5;
+      text-transform: uppercase;
+      white-space: nowrap;
+      vertical-align: middle;
+    }
+    .chip::before { font-family: var(--sans); font-weight: 600; }
+    .chip.pass { color: var(--good-text); border-color: color-mix(in srgb, var(--good) 45%, transparent); background: color-mix(in srgb, var(--good) 10%, transparent); }
+    .chip.pass::before { content: "\2713"; }
+    .chip.warn { color: var(--warn-text); border-color: color-mix(in srgb, var(--warn) 60%, transparent); background: color-mix(in srgb, var(--warn) 14%, transparent); }
+    .chip.warn::before { content: "!"; }
+    .chip.bad { color: var(--bad-text); border-color: color-mix(in srgb, var(--bad) 45%, transparent); background: color-mix(in srgb, var(--bad) 10%, transparent); }
+    .chip.bad::before { content: "\00d7"; }
+    .chip.neutral { color: var(--muted); border-color: var(--line-strong); background: var(--panel-2); }
+
+    .facts { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: .3rem 1.1rem; margin: .6rem 0 .8rem; }
+    .facts dt { padding-top: .18rem; color: var(--muted); font-family: var(--cond); font-size: .72rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; }
+    .facts dd { margin: 0; min-width: 0; }
+    .facts.boxed { padding: .7rem .9rem; border: 1px solid var(--line); border-radius: 4px; background: var(--panel); }
+
+    .stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin: 0 0 2.25rem; border: 1px solid var(--line); border-radius: 4px; background: var(--panel); }
+    .stat { display: grid; gap: .1rem; padding: .7rem .9rem; border-right: 1px solid var(--line); }
+    .stat:last-child { border-right: 0; }
+    .stat-label { color: var(--muted); font-family: var(--cond); font-size: .72rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; }
+    .stat-value { font-family: var(--cond); font-size: 1.7rem; font-weight: 600; line-height: 1.1; letter-spacing: -.01em; }
+    .stat-note { color: var(--muted); font-size: .78rem; line-height: 1.35; }
+
+    .section { margin-bottom: 2.25rem; scroll-margin-top: calc(var(--bar-h) + .75rem); }
+    .section > h2 { margin: 0 0 .7rem; padding-bottom: .3rem; border-bottom: 1px solid var(--line-strong); font-size: 1.3rem; letter-spacing: -.005em; }
+    h3 { margin: 1.1rem 0 .3rem; color: var(--muted); font-size: .76rem; letter-spacing: .08em; text-transform: uppercase; }
+    .prose { max-width: 72ch; }
+    .inline-list { margin: 0; padding: 0; list-style: none; }
+    .inline-list li { display: inline; margin: 0; }
+    .inline-list li:not(:last-child)::after { content: " · "; color: var(--muted); }
+
+    .note { margin: .8rem 0; padding: .55rem .85rem .55rem .8rem; border-left: 3px solid var(--warn); border-radius: 0 4px 4px 0; background: color-mix(in srgb, var(--warn) 9%, var(--panel)); }
+    .note.bad { border-left-color: var(--bad); background: color-mix(in srgb, var(--bad) 8%, var(--panel)); }
+    .note.info { border-left-color: var(--accent); background: color-mix(in srgb, var(--accent) 8%, var(--panel)); }
+    .note-label { display: block; margin-bottom: .1rem; font-family: var(--cond); font-size: .72rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; }
+    .note p:last-child { margin-bottom: 0; }
+
+    .diff { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .6rem; margin: .5rem 0 .8rem; }
+    .diff pre { margin: 0; }
+    .diff-label { display: block; margin-bottom: .25rem; color: var(--muted); font-family: var(--cond); font-size: .72rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; }
+
+    .table-wrap { margin: .6rem 0 .8rem; overflow-x: auto; border: 1px solid var(--line); border-radius: 4px; background: var(--panel); }
+    table { width: 100%; border-collapse: collapse; font-size: .86rem; line-height: 1.4; }
+    caption { padding: .5rem .7rem .3rem; color: var(--muted); font-size: .8rem; text-align: left; caption-side: top; }
+    th, td { padding: .42rem .65rem; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+    thead th { background: var(--panel-2); color: var(--muted); font-family: var(--cond); font-size: .72rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; white-space: nowrap; }
+    thead tr + tr th { border-top: 1px solid var(--line); }
+    tbody th { font-weight: 600; white-space: nowrap; }
+    tbody tr:last-child td, tbody tr:last-child th { border-bottom: 0; }
+    .num { text-align: right; font-family: var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+    th.num { font-family: var(--cond); }
+    .num small { display: block; color: var(--muted); font-size: .78rem; }
+    .cell-mono { font-family: var(--mono); font-size: .8rem; white-space: nowrap; }
+    .delta { font-weight: 500; }
+    td.bar { width: 160px; vertical-align: middle; }
+    .ratio { display: block; width: 140px; height: 8px; background: var(--bar-track); border-radius: 0 4px 4px 0; }
+    .ratio > span { display: block; height: 100%; width: calc(var(--r) * 100%); background: var(--bar-fill); border-radius: 0 4px 4px 0; }
+    .table-note { margin: -.2rem 0 .8rem; color: var(--muted); font-size: .8rem; }
+    .fit { width: 1%; }
+
+    .report-footer { margin-top: 2.5rem; padding-top: .8rem; border-top: 1px solid var(--line); color: var(--muted); font-size: .8rem; }
+    .empty { display: none; margin: 2rem 0; color: var(--muted); }
+    .empty.visible { display: block; }
+
+    @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+    @media print {
+      .topbar, .sidebar, .empty { display: none !important; }
+      .shell { display: block; }
+      body { background: #fff; color: #000; font-size: 11pt; }
+      main { max-width: none; padding: 0; }
+      .section, .stats, .table-wrap, .note { break-inside: avoid; }
+      a { color: inherit; text-decoration: none; }
+    }
+    @media (max-width: 920px) {
+      .shell { display: block; }
+      .sidebar { position: static; max-height: none; padding: .5rem .9rem; border-right: 0; border-bottom: 1px solid var(--line); }
+      .side-label, .side-meta { display: none; }
+      .side-nav { display: flex; gap: .1rem; overflow-x: auto; }
+      .side-nav a { flex: 0 0 auto; padding: .35rem .5rem; border-left: 0; border-bottom: 2px solid transparent; white-space: nowrap; }
+      .side-nav a.active { border-left: 0; border-bottom-color: var(--accent); background: transparent; }
+      .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .stat:nth-child(2) { border-right: 0; }
+      .stat:nth-child(-n+2) { border-bottom: 1px solid var(--line); }
+    }
+    @media (max-width: 640px) {
+      .topbar { height: auto; flex-wrap: wrap; padding-top: .5rem; padding-bottom: .5rem; }
+      .top-actions { width: 100%; }
+      .search { flex: 1; width: auto; min-width: 0; }
+      .facts { grid-template-columns: 1fr; gap: .1rem .6rem; }
+      .facts dt { padding-top: .45rem; }
+      .diff { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar" id="top">
+    <div class="brand"><span class="brand-mark" aria-hidden="true"></span><span>Validation brief</span><span class="brand-sub">pyglotaran staging</span></div>
+    <div class="top-actions">
+      <input class="search" id="search" type="search" placeholder="Filter sections" aria-label="Filter sections by text">
+      <button class="tool" id="theme" type="button" aria-label="Toggle color theme">Theme</button>
+      <button class="tool" type="button" onclick="window.print()">Print</button>
+    </div>
+  </header>
+
+  <div class="shell">
+    <aside class="sidebar" aria-label="Report navigation">
+      <p class="side-label">Sections</p>
+      <nav class="side-nav" id="nav"></nav>
+      <dl class="side-meta">
+        <dt>Date</dt><dd>2026-09-06</dd>
+        <dt>Status</dt><dd><span class="chip pass">Validated</span></dd>
+      </dl>
+    </aside>
+
+    <main>
+      <header class="masthead">
+        <p class="eyebrow">Staging runtime optimization · 2026-09-06</p>
+        <h1>Staging runtime optimization continuation</h1>
+        <div class="verdict"><span class="chip pass">Validated</span><span class="chip neutral">Retained, uncommitted</span></div>
+        <p class="lede">The new amplitude-label optimization preserves current staging outputs exactly and cuts PFID public optimizer-call time sharply. The change stays in the working tree; no commit was made.</p>
+        <dl class="facts boxed">
+          <dt>Change</dt>
+          <dd>One production file, staging core <code>glotaran/optimization/objective.py</code>: convert the amplitude coordinate to a Python list once before the gather in <code>OptimizationObjective.get_dataset_amplitudes</code>.</dd>
+          <dt>Oracle</dt>
+          <dd>Committed staging core <code>20020378</code> (parent <code>51574847</code>) on the installed stack NumPy 2.2.6 / SciPy 1.15.3 / Numba 0.63.1. Workspace started clean at <code>44def7a</code>.</dd>
+          <dt>Evidence</dt>
+          <dd><code>validation/runs/runtime-continuation-20260906/</code>. Generated evidence remains ignored; no evidence or throwaway worktree was deleted.</dd>
+          <dt>Open items</dt>
+          <dd><a href="#baseline-and-scope">Inherited dependency-upgrade acceptance</a> (spectral fitted-data RMS 1.10e-6 exceeds 1e-6, unresolved) · <a href="#inherited-correctness-concern">Inherited Gaussian shift defect</a> in <code>20020378</code> · <a href="#tests-revisions-and-reproduction">Installed stack differs from <code>uv.lock</code></a></dd>
+        </dl>
+      </header>
+
+      <section class="stats" aria-label="Headline results">
+        <div class="stat"><span class="stat-label">PFID real call, mean</span><span class="stat-value">−42% / −67%</span><span class="stat-note">Scheme 1 / scheme 2, public optimizer call, 3 timed runs each</span></div>
+        <div class="stat"><span class="stat-label">Spectral guidance, controlled</span><span class="stat-value">−9.2%</span><span class="stat-note">Converged four-step fit, 3 timed runs; original call −6.4%</span></div>
+        <div class="stat"><span class="stat-label">Notebook manifests</span><span class="stat-value">11 / 11 × 3</span><span class="stat-note">Fresh baseline, optimized and main runs all pass</span></div>
+        <div class="stat"><span class="stat-label">Staging self-comparison</span><span class="stat-value">14 / 14</span><span class="stat-note">Leaves pass; 28 fitted arrays at normalized RMS 0.0</span></div>
+      </section>
+
+      <section class="section" id="baseline-and-scope" data-title="Baseline and scope">
+        <h2>Baseline and scope</h2>
+        <dl class="facts">
+          <dt>Workspace</dt><dd>Started clean at <code>44def7a</code>.</dd>
+          <dt>Staging core</dt><dd>Started clean at <code>20020378</code> (parent <code>51574847</code>). The previous agent's three core edits are already in that commit.</dd>
+          <dt>Installed</dt><dd>NumPy 2.2.6 / SciPy 1.15.3 / Numba 0.63.1.</dd>
+          <dt>Unchanged</dt><dd>Dependencies, production notebooks, models, parameter flags, solver budgets, tolerances, result content.</dd>
+          <dt>Baseline copy</dt><dd>The complete <code>glotaran</code> directory of the committed staging implementation was copied into the ignored evidence directory <code>baseline-core/</code> before editing. Fresh subprocesses select this copy through <code>sys.path</code>, so the editable installation and production checkout are untouched.</dd>
+          <dt>Recorded per probe</dt><dd>All Python source hashes, notebook hash, actual interpreter, scientific package versions, thread settings, initial parameters, data dimensions, dtypes, budgets, tolerances, evaluation counts, termination reasons, peak RSS.</dd>
+        </dl>
+        <div class="note">
+          <span class="note-label">Unresolved, out of scope here</span>
+          <p>The inherited dependency upgrade's comparison with pre-upgrade staging remains a separate acceptance question. The old handover reports spectral fitted-data RMS <code>1.10e-6</code>, exceeding the contractual <code>1e-6</code>. It must not be called an accepted tolerance-equivalent upgrade on that evidence.</p>
+        </div>
+      </section>
+
+      <section class="section" id="bottleneck-and-change" data-title="Bottleneck and change">
+        <h2>Bottleneck and change</h2>
+        <div class="diff">
+          <div><span class="diff-label">Before</span><pre><code>list(amplitude_axis)   <span class="cm"># scalar DataArrays</span>
+list.index(...)        <span class="cm"># xarray equality, per comparison</span></code></pre></div>
+          <div><span class="diff-label">After</span><pre><code>np.asarray(amplitude_axis).tolist()   <span class="cm"># once</span>
+list.index(...)                       <span class="cm"># str equality</span></code></pre></div>
+        </div>
+        <h3>Cause</h3>
+        <p class="prose"><code>OptimizationObjective.get_dataset_amplitudes</code> receives an xarray coordinate. <code>list(amplitude_axis)</code> produces scalar DataArrays, so each <code>list.index</code> comparison invokes xarray's equality, coordinate alignment and index construction. The existing profile identifies hundreds of thousands of these comparisons; the previous gather vectorization retained this overhead.</p>
+        <h3>Change</h3>
+        <p class="prose">Convert the coordinate with <code>np.asarray(amplitude_axis).tolist()</code> once before the gather. Ordinary Python string comparisons replace xarray equality. The selection order and all numerical operations remain unchanged. There is no cache, cross-fit state, solver change, extra dependency or workload special case.</p>
+        <h3>Regression coverage</h3>
+        <ul class="inline-list">
+          <li>ndarray and xarray coordinate inputs</li>
+          <li>reordered global indices</li>
+          <li>differing per-slice amplitude layouts</li>
+          <li>a second reconstruction after mutating estimates, to detect accidental reuse</li>
+        </ul>
+      </section>
+
+      <section class="section" id="measurement-method" data-title="Measurement method">
+        <h2>Measurement method</h2>
+        <dl class="facts">
+          <dt>Probe</dt><dd><code>benchmark_staging_continuation.py</code> runs the original notebook cells through the last optimizer cell in a fresh process. Earlier setup and plotting stay outside timing; later plotting is not executed.</dd>
+          <dt>Timed interval</dt><dd>The public <code>Scheme.optimize</code> call: validation, solving, complete reconstruction and parameter-error calculation.</dd>
+          <dt>Phase timers</dt><dd>Lightweight wrappers separately time initialization, objective calculation and reconstruction. These phases are reported alongside, never substituted for public-call time.</dd>
+          <dt>Memory</dt><dd>A 20 ms RSS sampler runs only during the public call. Neither cProfile nor tracemalloc is enabled. RSS includes objects retained by prior cells and is not an isolated per-fit allocation measurement.</dd>
+          <dt>Driver</dt><dd><code>run_staging_continuation.py</code> alternates branch order per repetition. PFID: one warmup plus three timed repetitions. Standard examples: one plus five.</dd>
+          <dt>Snapshots</dt><dd>Captured only in warmups, after the public-call timer stops. <code>compare_staging_snapshots.py</code> recursively checks all native reconstructed fields, coordinates, attributes, metadata, parameter tables and optimization information.</dd>
+          <dt>Failed probe</dt><dd>The first PFID baseline probe failed after its first optimize call because pickling an entire Result encounters a dynamically generated model class. <code>pfid-baseline-warmup/</code> is retained as failed evidence and excluded. The rerun <code>pfid-baseline-warmup2/</code> stores plain result-field mappings and completed.</dd>
+        </dl>
+      </section>
+
+      <section class="section" id="controlled-workload-constraint" data-title="Controlled-workload constraint">
+        <h2>Controlled-workload constraint</h2>
+        <h3>PFID cannot be made to iterate</h3>
+        <p class="prose">Both original PFID real calls have <strong>zero free parameters</strong>, nfev=1 and njev=0, and terminate with <code>No free parameters to optimize.</code> They are meaningful public optimizer and reconstruction workloads, but they cannot perform 4–8 nonlinear steps by perturbing free starting values. Changing fixed/free flags would change the requested optimization problem and is outside the contract. The limitation is reported rather than relabelling result reconstruction as nonlinear optimization.</p>
+        <h3>What "success" means</h3>
+        <p class="prose">Staging's <code>optimization_info.success</code> means that SciPy returned a result, even when it exhausted its evaluation budget. The probe also captures SciPy's actual <code>success</code> and status; convergence claims use the actual termination. The original two-dataset and spectral-guidance calls both exhaust their budgets (17 and 21 evaluations) and must not be described as converged.</p>
+        <h3>Controlled variants</h3>
+        <div class="table-wrap">
+          <table>
+            <caption>Both start from a copy of the fresh baseline optimized parameter table and multiply only free, non-expression parameters. Diagnostic budget 100, solver tolerances unchanged. Initial tables are identical between branches; production files are unchanged.</caption>
+            <thead><tr><th>Case</th><th>Perturbation</th><th class="num">Budget</th><th class="num">Accepted nonzero steps</th><th class="num">nfev / njev / free</th><th>Termination</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">Two datasets</th><td>+5%</td><td class="num">100</td><td class="num">4</td><td class="num">7 / 5 / 10</td><td><code>xtol</code></td></tr>
+              <tr><th scope="row">Spectral guidance</th><td>+0.01%</td><td class="num">100</td><td class="num">4</td><td class="num">16 / 5 / 3</td><td><code>xtol</code></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="table-note">The final zero-step termination row is not counted as a genuine step.</p>
+        <p class="prose">Calibration ran during untimed full-suite validation, so its durations are not benchmark evidence. A +0.01% two-dataset trial was rejected as too short (two accepted steps). The final controlled repetitions ran separately.</p>
+      </section>
+
+      <section class="section" id="inherited-correctness-concern" data-title="Inherited correctness concern">
+        <h2>Inherited correctness concern found during audit</h2>
+        <div class="note bad">
+          <span class="note-label">Defect in <code>20020378</code>, not caused by this change</span>
+          <p>The earlier Gaussian dispersion vectorization omits <code>self.shift</code>. The original <code>parameters(axis)</code> path subtracts the per-slice shifts before applying dispersion. It needs a separate correctness fix and coverage for simultaneous shift and dispersion. This continuation preserves the requested current-staging oracle and does not silently alter those values.</p>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <caption>Focused reproduction, recorded in <code>inherited-gaussian-shift.txt</code>.</caption>
+            <thead><tr><th>Input</th><th class="num">Value</th><th>Path</th><th class="num">Output</th></tr></thead>
+            <tbody>
+              <tr><td>center / width</td><td class="num">1 / 10</td><td rowspan="2">Current <code>calculate_dispersion</code></td><td class="num" rowspan="2">[[-1, 1]]</td></tr>
+              <tr><td>shifts</td><td class="num">[0.5, 1]</td></tr>
+              <tr><td>dispersion center / coefficient</td><td class="num">100 / 2</td><td rowspan="2">Original parameter path</td><td class="num" rowspan="2">[[-1.5, 0]]</td></tr>
+              <tr><td>axis</td><td class="num">[0, 100]</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="section" id="original-workload-timings" data-title="Original workload timings">
+        <h2>Original-workload timings</h2>
+        <p class="prose">Baseline is <code>20020378</code> with the already upgraded installed dependencies; optimized adds only the label conversion. These are additional gains, not a remeasurement of the dependency upgrade against the older SciPy environment.</p>
+        <div class="table-wrap">
+          <table>
+            <caption>Public optimizer-call seconds, warmups excluded. Top line mean ± SD, second line median [min, max]. PFID 3 timed runs, standard examples 5.</caption>
+            <thead><tr><th>Call</th><th class="num">Baseline</th><th class="num">Optimized</th><th class="num">Δ mean</th><th>Optimized ÷ baseline</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">PFID scheme 1 dry run</th><td class="num">17.698 ± 9.717<small>12.119 [12.057, 28.918]</small></td><td class="num">10.816 ± 5.613<small>7.618 [7.533, 17.297]</small></td><td class="num delta">−38.9%</td><td class="bar"><span class="ratio" style="--r:.611" title="0.611"><span></span></span></td></tr>
+              <tr><th scope="row">PFID scheme 1 real</th><td class="num">15.553 ± 8.748<small>10.512 [10.493, 25.654]</small></td><td class="num">8.959 ± 4.868<small>6.152 [6.145, 14.581]</small></td><td class="num delta">−42.4%</td><td class="bar"><span class="ratio" style="--r:.576" title="0.576"><span></span></span></td></tr>
+              <tr><th scope="row">PFID scheme 2 dry run</th><td class="num">40.209 ± 5.984<small>37.017 [36.498, 47.112]</small></td><td class="num">12.318 ± 5.973<small>8.926 [8.813, 19.215]</small></td><td class="num delta">−69.4%</td><td class="bar"><span class="ratio" style="--r:.306" title="0.306"><span></span></span></td></tr>
+              <tr><th scope="row">PFID scheme 2 real</th><td class="num">37.173 ± 0.503<small>37.417 [36.594, 37.508]</small></td><td class="num">12.312 ± 5.997<small>8.866 [8.834, 19.236]</small></td><td class="num delta">−66.9%</td><td class="bar"><span class="ratio" style="--r:.331" title="0.331"><span></span></span></td></tr>
+              <tr><th scope="row">ex_two_datasets</th><td class="num">1.100 ± 0.021<small>1.107 [1.078, 1.121]</small></td><td class="num">1.096 ± 0.013<small>1.100 [1.082, 1.112]</small></td><td class="num delta">−0.4%</td><td class="bar"><span class="ratio" style="--r:.996" title="0.996"><span></span></span></td></tr>
+              <tr><th scope="row">ex_spectral_guidance</th><td class="num">1.934 ± 0.013<small>1.937 [1.913, 1.947]</small></td><td class="num">1.810 ± 0.013<small>1.808 [1.791, 1.826]</small></td><td class="num delta">−6.4%</td><td class="bar"><span class="ratio" style="--r:.936" title="0.936"><span></span></span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="table-note">Δ mean and the bar are optimized mean ÷ baseline mean, computed from the means shown. The bar's full track is the baseline mean.</p>
+        <p class="prose">PFID real-call means decrease by 42% and 67%; spectral guidance decreases by 6.4%. There is no convincing overall two-dataset speedup above timing variation. PFID variability is substantial and all samples are retained; medians and ranges are reported to avoid false precision. Snapshot-bearing warmup durations are not used for these estimates. No timing claim uses notebook wall time.</p>
+        <div class="table-wrap">
+          <table>
+            <caption>Evaluation counts, reconstruction phase and memory for the same calls. Counts and free-parameter totals are identical on both branches.</caption>
+            <thead>
+              <tr><th rowspan="2">Call</th><th class="num" rowspan="2">nfev / njev / free</th><th class="num" colspan="2">Reconstruction mean, s</th><th class="num" colspan="2">Max sampled RSS, GiB</th></tr>
+              <tr><th class="num">Baseline</th><th class="num">Optimized</th><th class="num">Baseline</th><th class="num">Optimized</th></tr>
+            </thead>
+            <tbody>
+              <tr><th scope="row">PFID scheme 1 dry run</th><td class="num">1 / N/A / 0</td><td class="num">12.149</td><td class="num">5.281</td><td class="num">1.257</td><td class="num">1.271</td></tr>
+              <tr><th scope="row">PFID scheme 1 real</th><td class="num">1 / 0 / 0</td><td class="num">12.009</td><td class="num">5.322</td><td class="num">1.952</td><td class="num">1.958</td></tr>
+              <tr><th scope="row">PFID scheme 2 dry run</th><td class="num">1 / N/A / 0</td><td class="num">34.580</td><td class="num">6.593</td><td class="num">3.881</td><td class="num">3.883</td></tr>
+              <tr><th scope="row">PFID scheme 2 real</th><td class="num">1 / 0 / 0</td><td class="num">33.175</td><td class="num">6.756</td><td class="num">4.624</td><td class="num">4.625</td></tr>
+              <tr><th scope="row">ex_two_datasets</th><td class="num">17 / 12 / 10</td><td class="num">0.031</td><td class="num">0.020</td><td class="num">0.245</td><td class="num">0.245</td></tr>
+              <tr><th scope="row">ex_spectral_guidance</th><td class="num">21 / 9 / 3</td><td class="num">0.175</td><td class="num">0.040</td><td class="num">0.198</td><td class="num">0.198</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="prose">There is no meaningful memory reduction. This is process RSS sampled during each optimizer call, not tracemalloc, process-tree RSS or allocation provenance, and it should not be equated with the older whole-notebook memory profile. Setup, plotting, saving, conversion and comparison are outside public-call timing. Initialization, objective and reconstruction distributions are in <code>timing-summary-final.json</code>.</p>
+      </section>
+
+      <section class="section" id="controlled-timings" data-title="Controlled timings">
+        <h2>Controlled timings</h2>
+        <p class="prose">One warmup and three timed fresh-process repetitions per branch. Both cases have four nonzero accepted steps and true SciPy convergence in every sample.</p>
+        <div class="table-wrap">
+          <table>
+            <caption>Public optimizer-call seconds. Top line mean ± SD, second line median [min, max].</caption>
+            <thead><tr><th>Case</th><th class="num">nfev / njev / free</th><th class="num">Baseline</th><th class="num">Optimized</th><th class="num">Δ mean</th><th>Optimized ÷ baseline</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">Two datasets, endpoint +5%</th><td class="num">7 / 5 / 10</td><td class="num">1.253 ± 0.040<small>1.242 [1.219, 1.297]</small></td><td class="num">1.240 ± 0.038<small>1.237 [1.203, 1.279]</small></td><td class="num delta">−1.0%</td><td class="bar"><span class="ratio" style="--r:.990" title="0.990"><span></span></span></td></tr>
+              <tr><th scope="row">Spectral guidance, endpoint +0.01%</th><td class="num">16 / 5 / 3</td><td class="num">1.520 ± 0.013<small>1.514 [1.511, 1.535]</small></td><td class="num">1.380 ± 0.010<small>1.375 [1.373, 1.392]</small></td><td class="num delta">−9.2%</td><td class="bar"><span class="ratio" style="--r:.908" title="0.908"><span></span></span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="prose">Spectral guidance improves by 9.2%; the two-dataset difference remains within timing variation. Max RSS is approximately 0.198 / 0.199 GiB for controlled spectral guidance and 0.245 / 0.246 GiB for controlled two datasets. Controlled PFID nonlinear steps are impossible under the fixed/free-parameter contract, as explained above.</p>
+      </section>
+
+      <section class="section" id="correctness-and-final-reference-comparison" data-title="Correctness and final comparison">
+        <h2>Correctness and final reference comparison</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Evidence</th><th>Result</th><th>What was compared</th></tr></thead>
+            <tbody>
+              <tr><th scope="row"><code>pfid-exact.json</code></th><td class="fit"><span class="chip pass">Exact match</span></td><td>All four native PFID snapshots: reconstructed result fields, dimensions, coordinates, attributes, metadata, parameter tables and optimizer histories.</td></tr>
+              <tr><th scope="row"><code>two-exact.json</code><br><code>spectral-exact.json</code></th><td class="fit"><span class="chip pass">Exact match</span></td><td>Original standard snapshots. Both controlled snapshot reports also match exactly.</td></tr>
+              <tr><th scope="row"><code>workload-audit.json</code></th><td class="fit"><span class="chip pass">Match</span></td><td>Notebook hashes, installed scientific versions, initial parameters, dimensions and dtypes, solver budget and tolerances, counts and termination across every timed pair and controlled repetition.</td></tr>
+              <tr><th scope="row"><code>full-baseline/</code><br><code>full-optimized/</code><br><code>full-main/</code></th><td class="fit"><span class="chip pass">11 / 11 each</span></td><td>Fresh notebook manifests. Baseline source provenance confirms the preserved copy was loaded; the optimized runner records the edited source tree.</td></tr>
+              <tr><th scope="row"><code>staging-self.json</code></th><td class="fit"><span class="chip pass">14 / 14 leaves</span></td><td>No missing artifacts; all 28 compared fitted arrays have normalized RMS 0.0. This fresh matched-input run resolves the old self-comparison's dataset-name mismatch for the current source trees.</td></tr>
+              <tr><th scope="row"><code>main-staging.json</code></th><td class="fit"><span class="chip pass">8 pass</span> <span class="chip neutral">6 expected diff</span> <span class="chip pass">0 regression</span></td><td>0 BASELINE_FAILURE. Spectral-guidance dataset1 fitted-data normalized RMS is <code>2.4928654061006497e-7</code>, below <code>1e-6</code>. The documented decomposition and parameter differences remain. No tolerance or classification was changed.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="note info">
+          <span class="note-label">Scope of this pass</span>
+          <p>The final reference result passes on the current installed stack but does not retroactively validate the pre-upgrade-versus-post-upgrade staging comparison. Original standard-example budget exhaustion is unchanged and distinct from semantic parity. The controlled examples demonstrate successful convergence.</p>
+        </div>
+      </section>
+
+      <section class="section" id="tests-revisions-and-reproduction" data-title="Tests and reproduction">
+        <h2>Tests, revisions and reproduction</h2>
+        <dl class="facts">
+          <dt>Validation suite</dt><dd><strong>36 passed, 1 skipped</strong> (<code>test-validation-final.log</code>).</dd>
+          <dt>Focused core tests</dt><dd><strong>35 passed</strong>: staging objective, Gaussian activation and PFID element (<code>test-core.log</code>).</dd>
+          <dt>Whitespace</dt><dd><code>git diff --check</code> passed for root and edited staging core.</dd>
+          <dt>Comparator fix</dt><dd>Native snapshot comparison originally reported a pandas storage-manager identity difference in optimizer histories. The reader now restores the actual DataFrame state and compares every cell, axis and metadata; a round-trip test verifies this. No history field is excluded from equality checks.</dd>
+          <dt>Package list</dt><dd><code>python -m pip freeze</code> was unavailable because pip is not installed in staging; <code>package-versions.txt</code> records installed distribution versions through <code>importlib.metadata</code>. No dependency was installed for the probes.</dd>
+        </dl>
+        <h3>Revisions</h3>
+        <dl class="facts">
+          <dt>Reference core</dt><dd><code>8f26be01d5a6ce63ec2556469ac3facc2d2cee68</code></dd>
+          <dt>Staging core</dt><dd><code>20020378e3b18e4d46020135bbf6959eacc9eb18</code> plus the uncommitted change</dd>
+          <dt>Reference examples</dt><dd><code>23287837579b9ad150ca33cce2b34bba33ec1e0d</code></dd>
+          <dt>Staging examples</dt><dd><code>44e3747cf39f0482ed5c05578624577938159085</code></dd>
+          <dt>Where recorded</dt><dd>Orchestration revisions and worktree states in <code>revisions.json</code>; notebook and source hashes in each <code>measurements.json</code>; manifest and lock hashes in <code>contracts.json</code>.</dd>
+          <dt>Runtime</dt><dd>Python 3.10.19 on Windows, Intel64 Family 6 Model 183 Stepping 1. OMP, MKL, OpenBLAS and Numba thread controls are all fixed to one per worker.</dd>
+        </dl>
+        <div class="note">
+          <span class="note-label">Installed stack differs from <code>uv.lock</code></span>
+          <p>The lock still pins NumPy 2.0.1 / SciPy 1.14.1 / Numba 0.60.0 / llvmlite 0.43.0; a normal sync may restore those versions. The stack measured here is NumPy 2.2.6 / SciPy 1.15.3 / Numba 0.63.1 / llvmlite 0.46.0. Lock alignment and acceptance of the inherited dependency upgrade remain follow-up work and are not part of this code-only performance change.</p>
+        </div>
+        <h3>Reproduction</h3>
+<pre><code><span class="cm"># Single probe, run with the staging interpreter</span>
+validation/benchmark_staging_continuation.py --notebook &lt;path&gt; --core &lt;source-root&gt; --output &lt;new-directory&gt; --save-results
+
+<span class="cm"># Paired driver: pick one case</span>
+--case pfid | --case two | --case spectral
+
+<span class="cm"># Controlled runs add these to the paired driver (spectral uses --perturb 1.0001)</span>
+--initial-snapshot &lt;baseline-result-1.pkl&gt; --perturb 1.05 --max-nfev 100</code></pre>
+        <p class="prose">Each <code>jobs.json</code> records the exact commands. Snapshot files are trusted local pickle artifacts and must not be loaded from untrusted sources.</p>
+      </section>
+
+      <section class="section" id="rejected-ideas-and-remaining-risks" data-title="Rejected ideas and risks">
+        <h2>Rejected ideas and remaining risks</h2>
+        <h3>Rejected</h3>
+        <ul class="prose">
+          <li><strong>Residual gathering and SVD rewrites.</strong> The supplied profile and focused experiment identify amplitude-label equality as the avoidable cost. Broader arithmetic changes add risk without being necessary for this gain.</li>
+          <li><strong>Cache, parameter-dependent reuse, buffer sharing, solver replacement, matrix reassociation.</strong> None introduced. The earlier matrix-copy removal was already rejected for changing optimizer trajectories and remains reverted.</li>
+          <li><strong>Tiny two-dataset perturbation.</strong> Rejected for doing too few genuine steps.</li>
+          <li><strong>Freeing PFID parameters to manufacture iterations.</strong> Rejected as a change to the optimization problem.</li>
+        </ul>
+        <h3>Remaining risks</h3>
+        <ul class="prose">
+          <li>No overall two-dataset speedup or memory improvement is claimed. PFID timing variance and existing numerical sensitivity remain material limits.</li>
+          <li>The inherited Gaussian shift defect, the unreconciled dependency lock and the original examples' non-convergence remain explicitly documented. The passing current-staging comparison does not hide them.</li>
+        </ul>
+        <h3>Files</h3>
+        <dl class="facts">
+          <dt>Production</dt><dd>Staging core <code>glotaran/optimization/objective.py</code>.</dd>
+          <dt>Validation</dt><dd>The probe, paired driver, snapshot comparator, summary helper and their focused tests.</dd>
+          <dt>Documentation</dt><dd>This report, the original handover, issue index, root README, validation log and changelog.</dd>
+          <dt>Evidence</dt><dd>Remains ignored. No evidence or throwaway worktree was deleted and no commit was made.</dd>
+        </dl>
+      </section>
+
+      <p class="empty" id="empty">No sections match that filter.</p>
+      <footer class="report-footer">Source of truth: <code>issues/staging-runtime-optimization-continuation.md</code>. This page presents the same report; the Δ column and ratio bars are derived from the tabulated means.</footer>
+    </main>
+  </div>
+
+  <script>
+    const root = document.documentElement;
+    const themeButton = document.getElementById('theme');
+    const darkQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    let savedTheme = null;
+    try { savedTheme = localStorage.getItem('validation-theme'); } catch (error) { savedTheme = null; }
+    if (savedTheme === 'dark' || savedTheme === 'light') root.dataset.theme = savedTheme;
+    themeButton.addEventListener('click', () => {
+      const current = root.dataset.theme || (darkQuery.matches ? 'dark' : 'light');
+      const next = current === 'dark' ? 'light' : 'dark';
+      root.dataset.theme = next;
+      try { localStorage.setItem('validation-theme', next); } catch (error) { /* storage unavailable */ }
+    });
+
+    const sections = [...document.querySelectorAll('.section')];
+    const nav = document.getElementById('nav');
+    sections.forEach((section) => {
+      const link = document.createElement('a');
+      link.href = `#${section.id}`;
+      link.textContent = section.dataset.title;
+      nav.appendChild(link);
+    });
+    const navLinks = [...nav.querySelectorAll('a')];
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          navLinks.forEach((link) => link.classList.toggle('active', link.hash === `#${entry.target.id}`));
+        }
+      });
+    }, { rootMargin: '-15% 0px -70% 0px' });
+    sections.forEach((section) => observer.observe(section));
+
+    const search = document.getElementById('search');
+    const empty = document.getElementById('empty');
+    search.addEventListener('input', () => {
+      const query = search.value.trim().toLowerCase();
+      let visible = 0;
+      sections.forEach((section) => {
+        const matches = !query || section.textContent.toLowerCase().includes(query);
+        section.hidden = !matches;
+        if (matches) visible += 1;
+      });
+      navLinks.forEach((link, index) => { link.hidden = sections[index].hidden; });
+      empty.classList.toggle('visible', visible === 0);
+    });
+  </script>
+</body>
+</html>
