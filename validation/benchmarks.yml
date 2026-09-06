@@ -15,7 +15,8 @@ branches:
     label: v0.8-staging
     entrypoint: glotaran.project.scheme.Scheme.optimize
 
-# invocation is one-based and counts optimizer calls within the notebook.
+# invocation is one-based and counts real optimizer calls within the notebook;
+# staging dry_run=True calls execute but are excluded from timing and numbering.
 # cell_id refers to the original notebook cell before the in-memory benchmark
 # prelude is inserted.
 cases:

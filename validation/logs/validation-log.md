@@ -1,5 +1,37 @@
 # Validation log
 
+## 2026-09-06 — Final main-versus-staging run
+
+- Reference/staging cores: `8f26be01d5a6ce63ec2556469ac3facc2d2cee68` /
+  `f6a091eba4cd9663db7e5a71f625bd74457332c5`. Nested revisions and pre-existing
+  Git statuses were unchanged by the run. Installed scientific stacks match;
+  staging's dependency lock is still older than its installed environment.
+- Common paired outputs: `validation/runs/{main,staging}/final-20260906-131441Z`.
+  Both execute 11/11; report `validation/comparisons/v07-v08-final-20260906-131441Z.json`
+  has 8 PASS, 6 EXPECTED_DIFFERENCE, no regression or missing artifact.
+- Complete case-study outputs: `validation/runs/case-studies/final-allfits-20260906-132646Z`.
+  Both execute 12/12; all 40 real fits per branch are captured and reloadable.
+  Canonical comparisons are the six `fresh-captures.json` reports under
+  `validation/comparisons/case-studies/final-allfits-20260906-132646Z`.
+- 29/40 fitted-data comparisons meet `1e-6`; 27/40 have exact inputs, and
+  21/40 satisfy both. Remaining fit differences: streak 3, TA 3, 2023 publication
+  1, 2025 MCL 4. PFID and TestCaseInitConc primary fit/input checks pass.
+  Secondary `REVIEW_REQUIRED` statuses and budget/guide-input caveats remain.
+- Artifact audit passed: 4,692 files, zero errors. All 34 schema/load checks pass.
+  Validation tests: 37 passed, 1 skipped; focused staging core tests: 35 passed.
+- Fixed validation-side notebook capture collisions and benchmark dry-run
+  counting. Superseded case-study batch and failed initial benchmark remain
+  preserved. Native focused benchmark worker passes with 11 real-fit evaluations.
+- Full report: `issues/final-validation-run.md`. Tooling hashes, commands,
+  source states and installed distributions are in
+  `validation/runs/final-allfits-20260906-132646Z`. No core/input changes or commits.
+- Corrected full benchmark: `validation/benchmarks/final-real-fits-20260906-1915Z`;
+  raw workers at `validation/benchmarks/raw/final-real-fits-20260906-1915Z`.
+  All 12 workers pass, with 150 timed samples and REPORT_ONLY status. Function
+  evaluations match for 14/15 fits; spectral guidance differs at 23/21. No pure
+  implementation-speed claim is made for that case. Manifest SHA-256:
+  `521afa93e626f61ec046b8387be025e8a857d2df0a5202b6d686ffdd2ed39c77`.
+
 ## 2026-09-06 — Staging runtime continuation
 
 - Baseline core `20020378e3b18e4d46020135bbf6959eacc9eb18`, reference core

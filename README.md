@@ -8,13 +8,21 @@ installations are independent.
 
 ## Current baseline
 
+The [final current-tree validation](issues/final-validation-run.md) executes all
+23 selected notebooks per branch successfully. Common examples have 8 `PASS`,
+6 `EXPECTED_DIFFERENCE` and no regressions. All 40 case-study fits per branch
+are captured; 11 fitted-data comparisons still exceed `1e-6`, so broad
+case-study equivalence remains unproven. The report records exact revisions,
+environment caveats and fresh artifact verification.
+
 - 11 common validation notebooks run successfully on both branches.
 - The scenario contract contains 14 comparable result leaves.
 - The runtime benchmark covers 15 public fit invocations.
 - The last accepted baseline semantic comparison has 8 `PASS`, 6 documented
   `EXPECTED_DIFFERENCE`, 0 regressions, and 0 missing-artifact failures.
-- The latest normalized runtime benchmark has 150 timed samples with matching
-  function-evaluation counts across branches. Runtime output is report-only.
+- The final runtime benchmark has 150 timed samples. Function-evaluation counts
+  match for 14/15 fits; spectral guidance uses 23 reference versus 21 staging
+  evaluations. Runtime output is report-only.
 
 The September 6 consolidation rerun on the current checkouts still executes
 11/11 notebooks per branch, but reports one spectral-guidance `REGRESSION`

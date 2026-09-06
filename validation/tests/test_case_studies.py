@@ -352,6 +352,18 @@ def test_notebook_clp_link_tolerance_is_associated_with_model(tmp_path: Path) ->
     assert tolerances == {model_path.resolve(): 2.1}
 
 
+def test_fit_captures_do_not_overwrite_between_notebooks() -> None:
+    paths = []
+    for name in ("step_1", "step_2"):
+        notebook = nbformat.v4.new_notebook(cells=[
+            nbformat.v4.new_code_cell("result = optimize(scheme)")
+        ])
+        captures = instrument_fit_results(notebook, namespace=name)
+        paths.append(captures[0]["result_path"])
+        assert captures[0]["result_path"] in notebook.cells[1].source
+    assert len(set(paths)) == 2
+
+
 def test_instrument_fit_results_skips_dry_runs() -> None:
     notebook = nbformat.v4.new_notebook(
         cells=[

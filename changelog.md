@@ -1,5 +1,23 @@
 # Validation changelog
 
+## 2026-09-06 — Final main-versus-staging validation
+
+- Executed all 23 selected notebooks per branch at reference core `8f26be01`
+  and optimized staging `f6a091eb`. Common results: 14/14 leaves, 8 PASS,
+  6 EXPECTED_DIFFERENCE, zero regressions or missing artifacts.
+- Retained all 40 case-study real-fit results per branch: 29 fitted-data
+  comparisons meet `1e-6`, 27 have exact inputs, and 21 satisfy both. Eleven
+  primary differences remain in the streak/TA protocols and publication cases.
+- Fixed case-study capture collisions by including the notebook stem in save
+  paths. Fixed benchmark instrumentation to execute but not time/count staging
+  dry runs. Production models, notebooks, fit budgets and core are unchanged.
+- Validation tests: 37 passed, 1 skipped; focused core tests: 35 passed.
+  Schema/load checks: 34 schemes passed. Artifact audit: 4,692 files verified.
+- Final benchmark: 12 successful workers, 150 timed samples, report-only.
+  Evaluation counts match for 14/15 fits; spectral guidance uses 23 versus 21.
+- Full evidence, exact revisions and residual issues:
+  `issues/final-validation-run.md`. Generated outputs remain ignored; no commit.
+
 ## 2026-09-06 — Runtime optimization continuation
 
 - Replaced xarray scalar iteration with plain NumPy label extraction in staging

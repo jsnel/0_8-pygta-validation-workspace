@@ -1,5 +1,9 @@
 # v0.7.4 reference versus v0.8 staging: release decision report
 
+The numerical evidence below is historical. The later
+[final validation run](../issues/final-validation-run.md) supplies fresh paired
+results for all 23 notebooks per branch at optimized staging `f6a091eb`.
+
 Evidence review: 6 September 2026. Workspace HEAD at review: `a58aeaf3397492df5a4feb7c56d0b81cf5b3131f`. This is a review of retained evidence, with no new scientific runs, tolerance edits, core changes, branch changes, or commits. Existing working changes and generated artifacts were preserved.
 
 **Recommendation: accept v0.8 as sufficiently equivalent for the established common-example scope, with the explicitly accepted spectral-guidance exception. Do not yet claim repository-wide scientific equivalence or retire v0.7 unconditionally.** Several external publication/protocol fits still have substantial, unclassified fitted-data differences. Their successful execution is valuable migration evidence, but does not settle scientific parity. A release with a clearly limited support scope is defensible; promotion coupled to complete v0.7 retirement needs the blockers below resolved or explicitly dispositioned by the release owner.

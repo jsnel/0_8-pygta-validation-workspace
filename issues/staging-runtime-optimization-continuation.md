@@ -1,5 +1,10 @@
 # Staging runtime optimization continuation — 2026-09-06
 
+Subsequent evidence: the [final validation run](final-validation-run.md) tests
+the committed optimization at `f6a091eb`. All 23 notebooks per branch execute;
+the 14 common leaves meet the contract. Eleven case-study fit differences,
+staging lock drift and the Gaussian result-center discrepancy remain documented.
+
 Status: **the new amplitude-label optimization is validated and retained, uncommitted**. It preserves current staging outputs exactly. Fresh evidence root: `validation/runs/runtime-continuation-20260906/`.
 
 ## Baseline and scope

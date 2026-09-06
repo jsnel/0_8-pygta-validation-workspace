@@ -7,6 +7,10 @@ defect.
 
 Current evidence:
 
+- [Final main-versus-staging run](final-validation-run.md): all 23 notebooks per
+  branch execute; common examples meet the contract, while 11/40 case-study
+  fitted-data comparisons remain above tolerance.
+
 - Result comparison: validation/comparisons/v07-v08-semantic.json
 - Scenario contract: validation/scenarios.yml
 - Remediation history: validation/logs/validation-log.md

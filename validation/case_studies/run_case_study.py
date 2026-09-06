@@ -206,7 +206,7 @@ def environment_metadata() -> dict[str, Any]:
     }
 
 
-def instrument_fit_results(notebook: Any) -> list[dict[str, str]]:
+def instrument_fit_results(notebook: Any, namespace: str | None = None) -> list[dict[str, str]]:
     """Save every real fit result without modifying the source notebook on disk."""
     captures: list[dict[str, str]] = []
     notebook.cells.insert(
@@ -255,7 +255,10 @@ def instrument_fit_results(notebook: Any) -> list[dict[str, str]]:
             target = node.targets[0].id
             index = len(captures) + 1
             capture_label = target.removesuffix("_native")
-            relative = f"case-study-results/fit-{index:03d}-{capture_label}/result.yaml"
+            capture_root = "case-study-results"
+            if namespace:
+                capture_root += f"/{namespace}"
+            relative = f"{capture_root}/fit-{index:03d}-{capture_label}/result.yaml"
             captures.append({"variable": target, "result_path": relative})
             statements.append(
                 f"_case_study_save_result(result={target}, result_path={relative!r}, "
@@ -276,7 +279,10 @@ def execute_notebook(
 ) -> dict[str, Any]:
     started = now()
     notebook = nbformat.read(source, as_version=4)
-    captured_fit_results = instrument_fit_results(notebook) if capture_fit_results else []
+    captured_fit_results = (
+        instrument_fit_results(notebook, namespace=source.stem.removesuffix("_v08"))
+        if capture_fit_results else []
+    )
     error = None
     try:
         NotebookClient(

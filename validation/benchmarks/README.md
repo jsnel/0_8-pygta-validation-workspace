@@ -4,6 +4,10 @@ Use this when you want a fresh runtime comparison after changing the staging
 submodule. It measures only the public optimizer call, not notebook setup,
 plotting, saving, or result comparison.
 
+Staging `dry_run=True` calls execute as notebook setup but are excluded from
+timing and real-fit invocation numbering. The benchmark contract covers 15 real
+fits; structural dry runs are not substitutes for those fits.
+
 Run from the workspace root in PowerShell:
 
 ```powershell
