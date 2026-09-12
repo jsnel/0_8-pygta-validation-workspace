@@ -1,6 +1,18 @@
 # Validation changelog
 
-## 2026-09-06 — Final main-versus-staging validation
+## 2026-09-09 â€” Split residual evidence by dataset role
+
+- Reviewed the paired final-allfits-20260906-132646Z reports and captured
+  notebook guide definitions at reference/staging cores 8f26be01 / f6a091eb.
+- Expanded issues/final-validation-run.md: 7 of 11 flagged fits include
+  measured-data exceedances; 4 are guide-only. Final TA measured data pass.
+  Publication guide maxima are separated from smaller measured-data maxima.
+- Documented separate measured-data, guide-construction and propagation
+  investigations without claiming a root cause or changing acceptance.
+- Verified counts and per-role maxima against existing paired reports;
+  documentation-only review, no numerical rerun or source changes.
+
+## 2026-09-06 â€” Final main-versus-staging validation
 
 - Executed all 23 selected notebooks per branch at reference core `8f26be01`
   and optimized staging `f6a091eb`. Common results: 14/14 leaves, 8 PASS,
@@ -18,7 +30,7 @@
 - Full evidence, exact revisions and residual issues:
   `issues/final-validation-run.md`. Generated outputs remain ignored; no commit.
 
-## 2026-09-06 — Runtime optimization continuation
+## 2026-09-06 â€” Runtime optimization continuation
 
 - Replaced xarray scalar iteration with plain NumPy label extraction in staging
   amplitude reconstruction at core `20020378` plus an uncommitted focused patch.
@@ -38,7 +50,7 @@
 - Evidence: `validation/runs/runtime-continuation-20260906/`; full handoff:
   `issues/staging-runtime-optimization-continuation.md`. No commits made.
 
-## 2026-09-06 — Refined OC/COC two-dataset example
+## 2026-09-06 â€” Refined OC/COC two-dataset example
 
 - Replaced the historical two-dataset transient-absorption model in both
   pinned example notebooks with the supplied refined OC/COC model, including
@@ -55,7 +67,7 @@
   comparison retains `EXPECTED_DIFFERENCE` for bounded refined-model parameter
   and fit drift; the full 14-leaf validation rerun remains separate work.
 
-## 2026-09-06 — Spectral-guidance isolation
+## 2026-09-06 â€” Spectral-guidance isolation
 
 - Isolated the current-tree regression to the three newly fixed example
   parameters and resulting optimizer-path sensitivity; restoring only pinned
@@ -83,7 +95,7 @@
 - Generated fresh parity evidence at `validation/comparisons/v07-v08-20260712-175136.json`: 11/11 notebooks per branch, 14/14 leaves, 8 PASS, 6 documented EXPECTED_DIFFERENCE, and no regressions or missing artifacts.
 - Corrected the validation contract's staging orchestration revision to the checked-out source revision.
 - Generated report-only runtime evidence at `validation/benchmarks/v07-v08-runtime-20260712-175136/`: 12 workers, 150 samples, 15 matched workloads, and no warnings.
-- Added validation-side fit-runtime benchmarking for 15 optimizer invocations, with isolated warm-ups, five timed repetitions, workload metadata, and mean ± sample-standard-deviation plots.
+- Added validation-side fit-runtime benchmarking for 15 optimizer invocations, with isolated warm-ups, five timed repetitions, workload metadata, and mean Â± sample-standard-deviation plots.
 - Normalized staging fit budgets to the pinned v0.7.4 observed workloads: 21 evaluations for spectral guidance and 17 for the two-dataset example; reran the full benchmark with no workload warnings.
 - Added a manifest-driven 14-leaf scenario contract and external v0.7-compatible result comparison layer.
 - Fixed staging result coverage: DOAS saving and all four spectral-constraint leaves.
@@ -174,9 +186,29 @@
   fit comparisons meet 1e-6 (worst 2.54e-8); secondary evidence remains reviewable.
   All 26 validation tests pass. Evidence run: 20260905-200057.
 
-## 2026-09-06 — Shared notebook compatibility
+## 2026-09-12 â€” Fresh MCL comparison
+
+- Reran the corrected 77 K MCL reference and staging notebooks from fresh isolated
+  copies; both passed. The first target fit is `2.83e-8` fitted-data normalized
+  RMS at 11/11 evaluations.
+- Added scale-consistent concentration diagnostics and a separate 200-budget
+  first-fit run. Both branches reached `ftol` after 21 evaluations with matching
+  key rates. No commit made.
+
+## 2026-09-06 â€” Shared notebook compatibility
 
 - Extracted embedded case-study helpers into the installable validation/notebook_compat package; updated all 12 ignored source _v08 notebooks and future migration output to import it.
 - Added repeatable consolidation tooling, package/source provenance, documentation, and compatibility tests (31 staging tests; four applicable v0.7 tests).
 - Fresh common notebooks passed 11/11 per branch and direct conversion passed all 14 leaves. Current-tree spectral-guidance parity exceeds tolerance; see issues/notebook-compatibility-consolidation.md for exact evidence and revision drift.
 - Final consolidated case-study execution passed all 12 notebooks; verified 2,896 artifact hashes with no errors. Evidence: validation/runs/case-studies/compat-20260906-022006/compatibility-verification.json.
+- MCL native convergence captures verified separately with explicit branch Python
+  environments: 21/21 evaluations (`ftol`), fitted-data RMS `1.14330e-8`,
+  all-nine-species scale-adjusted concentration RMS at most `1.84687e-8`,
+  maximum relative rate difference `6.57453e-8`. PSI k21 reaches bound 0.03.
+- Final notebook measured data pass; remaining exceedances are guidance-only.
+  Full report: `validation/comparisons/case-studies/20260912-110000Z-mcl-refresh/mcl-refresh-summary.md`.
+  Native result/notebook artifact audit: 149 checks, zero failures. Added
+  `validation/run_mcl_convergence.py` and `validation/analyze_mcl_first_fit.py`;
+  both executed successfully. No production inputs/core edits or commit.
+
+

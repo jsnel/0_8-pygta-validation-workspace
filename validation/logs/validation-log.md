@@ -434,3 +434,27 @@ Generated [v07-v08-detailed.md](../comparisons/v07-v08-detailed.md) and its JSON
 - Focused test passed (`1 passed in 11.23 s`), exact paired-metric assertions
   passed, and `git diff --check` passed. Machine-readable paired summary:
   `validation/runs/spectral-isolation-20260906-final/summary.json`.
+
+## 2026-09-09 — Measured-data versus guide residual review
+
+- Evidence: validation/comparisons/case-studies/final-allfits-20260906-132646Z/*/fresh-captures.json and the matching captured reference notebooks. Source cores: 8f26be01 / f6a091eb; reused paired outputs, no new runs.
+- Updated issues/final-validation-run.md with all 11 residual captures split by dataset role: 7 measured-data exceedances and 4 guide-only. Checked notebook dataset mappings, guide extraction/loading and array shapes.
+- Verified the linked 2023 fit has 25 measured and 17 guide datasets, all above tolerance; measured maximum 3.8236963e-3 versus guide maximum 4.3104925e-2. Final TA measured maximum 3.1373299e-7 passes; final MCL measured maximum 2.1837432e-4 remains above tolerance.
+- Validation: report-derived count assertions passed; per-dataset metrics inspected. Documentation-only change; no tests or fits rerun, no tolerance/status changes, no commit. Root causes remain open; investigation priorities now separate measured-data drift from guide construction and downstream propagation.
+
+## 2026-09-12 — Fresh 77 K MCL rerun
+
+- Reran the corrected reference and staging notebooks in fresh isolated outputs: `validation/runs/case-studies/20260912-110000Z-mcl-refresh/`; both manifests passed with zero failures.
+- Fresh semantic comparison: all four captured leaves present; first target leaf fitted-data normalized RMS `2.8327814789302805e-8`, with 11/11 evaluations.
+- Scale-aware concentration diagnostic: `super2ns` raw RMS `0.5376054264`; after dividing staging concentrations by `scale.super2ns=1.5376054061`, RMS `3.4973647664e-8`.
+- Separate 200-budget first-fit diagnostics stopped at 21 evaluations with `ftol` on both branches. No source notebooks or pyglotaran core files changed.
+
+- MCL native convergence captures verified separately with explicit branch Python
+  environments: 21/21 evaluations (`ftol`), fitted-data RMS `1.14330e-8`,
+  all-nine-species scale-adjusted concentration RMS at most `1.84687e-8`,
+  maximum relative rate difference `6.57453e-8`. PSI k21 reaches bound 0.03.
+- Final notebook measured data pass; remaining exceedances are guidance-only.
+  Full report: `validation/comparisons/case-studies/20260912-110000Z-mcl-refresh/mcl-refresh-summary.md`.
+  Native result/notebook artifact audit: 149 checks, zero failures. Added
+  `validation/run_mcl_convergence.py` and `validation/analyze_mcl_first_fit.py`;
+  both executed successfully. No production inputs/core edits or commit.

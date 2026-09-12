@@ -40,7 +40,97 @@ All 12 notebooks passed per branch and all 40 real-fit captures per branch are p
 
 Twenty-one fits satisfy both exact-input and fitted-data requirements. All 40 retain the comparator's provisional `REVIEW_REQUIRED` classification because secondary arrays, parameter coverage or metadata also differ; this does not mean all 40 have differing fitted curves. There are zero missing-artifact classifications. Metrics are relative to reference fitted-curve RMS, not a percentage of experimental error or parameter uncertainty.
 
-The remaining primary differences are:
+### Measured data versus guidance spectra (2026-09-09 review)
+
+The 11 above-tolerance fit captures split into **7 with measured-data
+differences** and **4 with guidance-only differences**. Of the latter, three
+are standalone spectral fits and one is the final TA target fit, whose four
+measured datasets all pass. The maxima in the table above combine these roles;
+they must not be read as measured-data maxima.
+
+Here “measured” means the experimental time-by-wavelength matrices, including
+their existing preprocessing. “Guide” means an extracted SAS/SADS supplied as
+a constraint or fitted separately to construct a guide. Classification was
+checked against the captured reference notebooks' dataset mappings and guide
+creation/loading cells, with array dimensions as corroboration, not the sole
+criterion. These are dataset roles, not claims about the original experimental
+provenance of every spectrum. Each value below is the maximum of the existing
+per-dataset fitted-data normalized RMS values within that role; no arrays were
+pooled or tolerances changed. A dash means that role is absent.
+
+| Residual fit capture | Measured-data maximum (dataset) | Guide maximum (dataset) | Above `1e-6` in |
+|---|---|---|---|
+| Streak steps 1–2, fit 4 | `8.0269184e-3` (`CF9212WLtr1`) | — | Measured only |
+| Streak steps 1–2, fit 5 | `3.5257849e-3` (`CF9212WLtr1`) | — | Measured only |
+| Streak steps 1–2, fit 6 | `1.9688809e-3` (`CF9212WLtr1`) | — | Measured only |
+| TA step 3, target fit 2 | `7.0978961e-5` (`670TR1`) | — | Measured only |
+| TA step 3, spectral fit 13 | — | `1.1714565e-6` (`dataset`, free spectrum) | Guide only |
+| TA step 3, final target fit 14 | `3.1373299e-7` (`670TR1`) | `1.2457040e-6` (`Ant1SADS`) | Guide only |
+| 2023 linked fit | `3.8236963e-3` (`Syn7335WLtr2`) | `4.3104925e-2` (`WLRCSAS`) | Both |
+| 2025 MCL initial target fit 1 | `3.1740110e-4` (`super2ns`) | — | Measured only |
+| 2025 MCL spectral fit 2 | — | `2.8941735e-2` (`dataset`, PSI1) | Guide only |
+| 2025 MCL spectral fit 3 | — | `1.8507978e-2` (`dataset`, PSII1) | Guide only |
+| 2025 MCL final target fit 4 | `2.1837432e-4` (`super2ns`) | `2.9402274e-2` (`dataPSI1`) | Both |
+
+**Measured-data investigation takes priority.** Streak fits 4–6 contain only
+the three measured `CF9212WLtr1/2/4` matrices; TA target fit 2 contains only
+`670TR1/2` and `700TR1/2`; the initial MCL target contains only `super1ns/2ns`.
+All these inputs are exact across branches. Their differences cannot be
+attributed to differing guidance inputs in those fits. Matching evaluation
+counts do not prove matching optimizer trajectories or convergence. The next
+diagnostic is a common-parameter objective/reconstruction comparison followed
+by trajectory comparison at the earliest divergent fit. Final streak measured
+fits already pass, so distinguish intermediate behavior from final outcomes.
+
+The 2023 linked fit contains **25 measured matrices and 17 guides**, all with
+exact inputs. All 25 measured comparisons and all 17 guide comparisons exceed
+`1e-6`. Its measured maximum is about 0.382% of reference fitted-signal RMS,
+whereas the previously quoted 4.31% is a guide maximum. This is still a
+measured-data discrepancy. Identical guide inputs exclude propagation of
+different upstream guides here, but do not exclude differences in how the
+joint objective handles guidance, weights or linked spectra. Compare measured
+and guide objective contributions separately at common parameters before
+attributing the discrepancy to its two-evaluation budget.
+
+**Guide construction and downstream influence require separate analysis.**
+In TA fit 13 the free-spectrum input already differs by `8.4582054e-8`.
+In the final TA fit the largest guide *input* difference is `freeSADS`
+(`1.1714570e-6`), but the largest guide *fitted-output* difference is
+`Ant1SADS` (`1.2457040e-6`); `freeSADS` fitted output itself passes at
+`5.2835941e-7`. Thus the final exceedance is not simply the free-guide input
+metric being repeated. All four measured inputs are exact and their fitted
+outputs pass, despite differing guides. Controlled identical-guide fits would
+separate propagated input effects from solver/reconstruction effects; the
+present evidence does not establish either as the root cause.
+
+MCL spectral fits 2 and 3 fit PSI1/PSII1 guides extracted from the initial
+target's species spectra, not fresh experimental matrices. Their inputs
+already differ by `3.2077644e-2` and `1.4412083e-2`; fit 2 also has 20 versus
+25 evaluations. These are not identical-input engine comparisons. The much
+larger component-spectrum drift than reconstructed measured-data drift is
+consistent with sensitivity of the decomposition, but does not by itself
+prove non-identifiability. In the final MCL target, measured inputs remain
+exact while PSI1/PSII1 guide inputs differ by `2.8941735e-2` and
+`1.8507978e-2`. Both measured fitted outputs still exceed tolerance
+(`1.6800592e-4`, `2.1837432e-4`), but the 2.94% headline belongs to a guide;
+the measured maximum is about 0.0218%. Investigate the initial measured-data
+divergence first, then repeat guide generation and the final fit with common
+guides to isolate propagation.
+
+Evidence: the four affected repositories' `fresh-captures.json` files under
+`validation/comparisons/case-studies/final-allfits-20260906-132646Z/`, and their
+paired captured worktrees under
+`validation/runs/case-studies/final-allfits-20260906-132646Z/`. In particular,
+the 2023 notebook explicitly defines `STREAK_CLP_GUIDE_DATASETS` and
+`TA_CLP_GUIDE_DATASETS`; the MCL notebook creates guides using
+`create_clp_guide_dataset`; the TA notebook loads the spectral inputs and
+target guides from `guide/`. This review reuses the same paired final-run
+evidence and source revisions recorded above. No fits were rerun, numerical
+acceptance statuses changed, or root causes declared resolved.
+
+### Original fit-level evidence
+
+The remaining primary differences, retaining the original combined maxima, are:
 
 - **Streak:** intermediate fits 4, 5 and 6 in steps 1–2 have RMS `0.0080269184`, `0.0035257849` and `0.0019688809`, with exact inputs and 7/7 evaluations. The final fit of that notebook is within tolerance at `4.89914e-8`; the final steps 3–4 fit is `8.56931e-9`.
 - **TA:** target fit 2 is `7.0978961e-5` with exact inputs and 9/9 evaluations. Spectral fit 13 and final target fit 14 are `1.1714565e-6` and `1.2457040e-6` at 25/25 and 7/7 evaluations. Ten downstream fits receive slightly different generated inputs. In the final target, the `freeSADS` guide differs by `1.1714570e-6`; these downstream results cannot be treated as independent identical-input engine comparisons.
@@ -94,3 +184,18 @@ The validation-only changes are the notebook-specific capture paths in `validati
 Tests: 37 passed, 1 skipped in `tests-benchmarkfix.log`; focused staging core tests: 35 passed in the initial final-run directory's `tests-core.log`. `git diff --check --ignore-submodules=all` passes. Exact validation-tool hashes are recorded in `validation-tooling.json`. `final-source-state.json` confirms all nested checkout revisions and Git statuses match the pre-run snapshot. These sidecars live under `validation/runs/final-allfits-20260906-132646Z/`.
 
 No commit was made. The pre-existing deletion of `testcase-init-conc-validation-prompt.md` and all migrated case-study changes were preserved. Failed/superseded attempts and generated scientific evidence remain on disk and are not staged.
+
+## 2026-09-12 — MCL evidence refreshed
+
+The fresh corrected MCL notebook pair supersedes the historical MCL rows above
+for current-input conclusions, without changing the other case-study evidence.
+Both complete notebooks pass with four captured fits per branch. First target
+measured-data RMS is `2.83278e-8`; final target measured-data maximum is
+`7.55223e-8`. Remaining exceedances are guidance-only: standalone PSII guide
+`9.34540e-6`, final PSI/PSII guides `1.23848e-6` / `5.86775e-6`.
+A separate 200-budget first-fit pair reaches `ftol` at 21/21 evaluations and
+matches fitted data at `1.14330e-8`. The large concentration amplitude difference
+is the dataset-scale export convention; all-nine-species profiles agree after
+that convention is aligned. [Fresh report and rate table](../validation/comparisons/case-studies/20260912-110000Z-mcl-refresh/mcl-refresh-summary.md).
+No global acceptance count is recomputed by mixing this focused rerun with
+historical runs. Source cores remain `8f26be01` / `f6a091eb`.
