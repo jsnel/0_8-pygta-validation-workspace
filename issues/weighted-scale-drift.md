@@ -2,9 +2,12 @@
 
 ## Status
 
-Open. This is the highest-priority unresolved numerical difference in the
-current example matrix. No 0.8 core change is justified until the same
-objective and weight convention have been reproduced independently.
+Resolved — 2026-09-13. Cause 5, optimizer termination on a flat direction of
+the objective. No v0.8 core defect and no core change. Both branches reach the
+same objective value to machine precision after an identical number of function
+evaluations and an identical termination condition; the residual `scale.3`
+difference is 0.0026% relative and lies far inside the convergence tolerance
+the fit was asked to achieve. See "Resolution" below.
 
 ## Question
 
@@ -145,3 +148,94 @@ dataset-3 fitted-data normalized RMS (`2.446285059310538e-05`), parameter
 result, and `EXPECTED_DIFFERENCE` status. The kinetic activation and equal-area
 penalty fixes did not affect this scenario, so the scale-drift investigation
 remains open.
+
+## Resolution — 2026-09-13
+
+### Evidence
+
+Source: the final run `validation/comparisons/v07-v08-final-20260906-131441Z.json`
+and the retained `result.yml` files under
+`validation/runs/main/output-final/home/pyglotaran_examples_results/simultaneous_analysis_3d_weight/`
+and
+`validation/runs/staging/output-final/home/pyglotaran_examples_results_staging/simultaneous_analysis_3d_weight/`.
+
+The optimizer ran identically on both branches:
+
+| Quantity | v0.7.4 | v0.8 staging | Relative difference |
+|---|---|---|---:|
+| `number_of_function_evaluations` | 86 | 86 | identical |
+| `success` | true | true | identical |
+| `termination_reason` | `` `ftol` termination condition is satisfied. `` | `` `ftol` termination condition is satisfied. `` | identical |
+| `chi_square` | 5029.018034571807 | 5029.01803457181 | 5.4255e-16 |
+| `reduced_chi_square` | 0.05479068740953748 | 0.05479068740953751 | 6.3322e-16 |
+| `root_mean_square_error` (dataset3) | 83.03097834229308 | 83.03100204448751 | 2.855e-7 |
+| `weighted_root_mean_square_error` (dataset3) | 0.2075774458557327 | 0.20757750511121884 | 2.855e-7 |
+| `scale.3` | 72.73623223408798 | 72.73812040514919 | 2.5959e-5 |
+| `optimality` | 0.0009332387659575036 | 0.0009652588374045726 | 3.43e-2 |
+
+The objective agrees to about two units in the last place of a double. The
+SciPy `least_squares` default `ftol` of `1e-8` terminates when the cost change
+falls below `ftol * cost = 2.5145e-5`. The observed cost difference between the
+branches is `1.3642e-12`, which is `5.4e-8` times that threshold.
+
+### Mechanism
+
+`dataset3` carries `weights: [{value: 0.0025, global_interval: [400, 600]}]`, a
+400-fold down-weighting, and its fitted `scale.3` is about 72.7. The weighted
+residual contribution of `dataset3` to the sum of squares is scaled by
+`0.0025**2 = 6.25e-6`, so `scale.3` is the most weakly determined parameter in
+the problem. Both optimizers stop when the cost stops changing, and along this
+direction the cost is flat to well below `ftol`. The two runs therefore halt at
+different points on the same flat valley floor while agreeing on the objective
+to machine precision.
+
+The `optimality` (gradient infinity-norm) difference of 3.4% is consistent with
+this: near a flat minimum the gradient is small (`9.3e-4` against a cost of
+`2.5e3`) and dominated by rounding, so its relative spread is large while the
+cost itself is converged.
+
+### Disposition against the enumerated causes
+
+1. Translated-input difference — excluded. `data` compares exactly
+   (`max_abs = 0.0`, `normalized_rms = 0.0`) on all three datasets.
+2. Weight construction or interval selection — excluded. Both schemes declare
+   the same two rules (`0.5` and `0.0025` over `[400, 600]`), and
+   `weighted_root_mean_square_error` agrees to `2.9e-7` relative on the
+   weighted datasets.
+3. Weighted versus unweighted residual handling — excluded, same evidence.
+4. Scale estimation or final parameter assignment — excluded. All other
+   parameters pass at `rtol = 1e-4`; only the weakest-determined one moves.
+5. **Optimizer termination/convergence — confirmed.**
+6. Result serialization/reporting — excluded. Persisted and recomputed values
+   agree.
+7. v0.8 package defect — not supported by any of the above.
+
+### Magnitude in relative terms
+
+Expressed as percentages of the reference values, the whole example matrix is
+far inside the 0.1% acceptance band agreed for this comparison:
+
+- worst fitted-data normalized RMS across all 14 scenarios: `2.4463e-5`
+  = **0.0025%** (this scenario, dataset3);
+- `scale.3`: **0.0026%**;
+- objective (`chi_square`): **5.4e-14 %**.
+
+The only parameter difference above 0.1% anywhere in the example matrix is
+`study_transient_absorption/two_dataset_analysis` at 0.708%, which is the
+separately dispositioned non-identifiability documented in
+`issues/rates-k3d2-identifiability.md`; its fitted data agrees to 0.00076%.
+
+### Focused test
+
+The weighting convention is already covered independently of optimizer
+convergence by `test_weight_reconstruction_and_derived_weighted_rmse` in
+`validation/tests/test_compatibility.py`, which reconstructs the weight array
+from the scheme, asserts the interval selection and value, and checks the
+derived weighted RMSE. No new test is required.
+
+### Acceptance
+
+Closed under the second acceptance criterion: a documented solver/convergence
+convention with a focused test and a justified tolerance. The existing
+scenario tolerance of `3e-5` is retained and is not relaxed. No v0.8
+parameters were post-processed.

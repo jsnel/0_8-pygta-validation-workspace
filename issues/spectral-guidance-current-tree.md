@@ -160,3 +160,23 @@ scenario is the minimal way to validate the existing contract; retaining the
 new constrained problem requires explicit new scientific acceptance evidence.
 The smaller accepted-vector restoration defect warrants its own focused fix
 and result-state regression test.
+
+
+## 2026-09-13 — Explicit CI acceptance-contract revision
+
+The user authorized scenario-specific tolerance changes for restoring CI.
+Fresh paired runs `validation/runs/{main,staging}/ci-restore-20260913-000749`
+again reproduce `1.2572461877946428e-6` on dataset1, with exact inputs.
+The earlier controlled experiments above identify the constrained-fit numerical
+path sensitivity; the new observation is not a new explanation or a convergence
+claim. We now explicitly accept this bounded difference with a **2e-6**
+scenario-only tolerance, approximately 1.59 times the observed drift. Ordinary
+scenarios remain at 1e-6. This supersedes the earlier decision to retain 1e-6;
+it does not retrospectively alter historical reports or resolve separate
+accepted-parameter restoration concerns.
+
+The original fresh report remains `main-staging.json` (one regression); the
+revised contract report is `main-staging-accepted.json`, both under
+`validation/comparisons/ci-restore-20260913-000749/`. The latter records eight
+PASS and six EXPECTED_DIFFERENCE. See [CI restoration](compare-results-ci.md)
+for revisions, deployment dependencies, and the refreshed baseline candidate.

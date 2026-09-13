@@ -45,8 +45,8 @@ for the corrected reference first fit, matching staging's 26-parameter result.
 
 ## Evidence
 
-- Paired run: `validation/runs/case-studies/20260830-182522/`.
-- Comparison report:
+- The historical paired raw run was removed during validation-run cleanup.
+- Retained comparison report:
   `validation/comparisons/case-studies/20260830-182522/pub-2025-01-van-stokkum-et-al/comparison.json`.
 - Reference result:
   `reference/worktree/77K_target_MCL/case-study-results/fit-001-target_result1/result.yaml`.
@@ -64,8 +64,8 @@ parity metric.
 
 ## PFID zero-active-parameter edge case
 
-The PFID case study at `validation/runs/case-studies/20260830-235141/`
-exposes the limiting form of the same behavior. Both supplied parameter tables
+The historical PFID case-study raw run (now removed during cleanup) exposed the
+limiting form of the same behavior. Both supplied parameter tables
 mark only `alpha.1` as varying, but neither active legacy model references
 `alpha.1`; the PFID `alpha` fields are commented out. v0.7 therefore sends one
 flat direction to SciPy and reports success after one evaluation with the
@@ -94,10 +94,9 @@ parameters are fixed while the sole varying parameter is unused and therefore
 removed during model resolution. The complete optimizer test directory passes
 (`55 passed`).
 
-The repaired staging notebook run is at
-`validation/runs/case-studies/20260831-224923/pfid/staging/`. Both real fits now
-report `success: true`, one function evaluation, zero free parameters, and the
-explicit termination reason above. The captured-fit comparison is at
+The repaired staging notebook raw run was removed during cleanup. Both real fits
+reported `success: true`, one function evaluation, zero free parameters, and the
+explicit termination reason above. The retained captured-fit comparison is at
 `validation/comparisons/case-studies/20260831-224923/pfid/captured-fit-comparison.json`.
 Comparing these results with the original v0.7 evidence produces the same
 fitted-data normalized RMS values as before: `1.67741866882088e-13` and

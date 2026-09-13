@@ -1,5 +1,93 @@
 # Validation changelog
 
+## 2026-09-13 — Fresh full PR-readiness validation
+
+- Re-executed all 23 notebooks per branch in `validation/runs/pr-readiness-20260913-093010Z/`;
+  all pass. Common comparison: 8 PASS, 6 EXPECTED_DIFFERENCE, zero regressions.
+- Captured 40 case-study fits per branch: 32/40 within `1e-6`, 36/40 within the
+  documented 0.1% band. Retained four budget-truncated exceedances and updated
+  MCL evidence for the current, differing scientific dependency stacks.
+- Validation tests: 56 passed, 1 skipped; persistence tests: 7 passed with an
+  isolated system-temp directory; schema/load: 34 passed. Audited 3,761 files
+  without missing/hash errors and verified unchanged source state during execution.
+- Added `issues/pr-readiness-20260913.md` with revisions, artifacts and the
+  draft-PR/pre-merge distinction. No source, notebook, budget, tolerance or
+  dependency changes; no commits, staging or separate performance benchmark.
+
+## 2026-09-13 — Close three open investigations
+
+- **Weighted 3D scale drift resolved.** `simultaneous_analysis_3d_weight` is
+  optimizer termination on a flat direction, not a v0.8 defect. Both branches
+  run 86 function evaluations, terminate on `` `ftol` ``, and agree on
+  `chi_square` to `5.4e-16` relative; the cost difference is `5.4e-8` times the
+  solver's own `ftol * cost` termination threshold. `dataset3` carries weight
+  `0.0025`, so `scale.3` is the weakest-determined parameter and differs by
+  `2.5959e-5` = 0.0026%. Causes 1–4, 6 and 7 are excluded by exact input
+  comparison and by weighted-RMSE agreement to `2.9e-7`. Existing `3e-5`
+  tolerance retained; no parameters post-processed. Weighting convention stays
+  covered by `test_weight_reconstruction_and_derived_weighted_rmse`.
+- **Weighted-RMSE and default-scale persistence fixed in the staging core.**
+  Confirmed as an unintentional omission. `create_result_metadata` returned
+  `None` when no `weighted_residual` existed, and
+  `model_dump(exclude_defaults=True)` in `glotaran/builtin/io/yml/yml.py` then
+  dropped `scale == 1` as well; 16 of 28 leaves omitted the scale and 20 of 28
+  the weighted RMSE. v0.7 writes both unconditionally and falls back to the
+  unweighted RMSE, so the fix restores the reference contract. Two float
+  scalars per leaf — `result.yml` grows about 80 bytes against 3.93 MB of
+  artifacts; no array is added. Core suite 455 passed, 9 xfailed; validation
+  suite 56 passed, 1 skipped; ruff clean. `test_result_round_tripping` had
+  asserted the omission and now asserts the restored contract. Verified
+  end-to-end: `simultaneous_analysis_3d_weight` `dataset1` now persists
+  `scale=1.0` and weighted RMSE `0.2537817152762107` equal to its RMSE,
+  matching v0.7's `1.0` / `0.2537816922132262`. The fit is unchanged at 86
+  evaluations and cost `2.5145e+03`.
+- **PFID runtime reprofiled after the staging optimizations.** The Sep-1
+  profile predated `f601c1a4` and `5dd45d5f` (Sep 12). Rerunning the same
+  five-repetition protocol on `879c5bce` gives staging `180.05 s → 137.32 s`
+  (−23.7%) and a staging-to-reference ratio of **2.57x → 1.93x**, with the gain
+  concentrated in the second model's linked fit (`58.66 s → 23.24 s` and
+  `60.06 s → 23.26 s`). Peak RSS is unchanged at `5143.5 → 5130.8 MiB`, so the
+  +55% memory gap and its allocation-site attribution remain open; mean sampled
+  RSS fell 14%. Artifacts: `validation/benchmarks/memory-profile-postopt/`.
+  Caveat: the staging notebook hash differs from the Sep-1 run and the rerun
+  passed `--record-fit-calls`.
+- **Relative-magnitude assessment.** Applying a 0.1% relative acceptance band,
+  all 14 common example leaves pass (worst `2.4463e-5` = 0.0025%). Of 49
+  case-study fits with a non-zero difference, 8 exceed 0.1%; after the
+  2026-09-12 MCL refresh supersedes three, 4 unique fits remain, all
+  terminating on *maximum function evaluations* on at least one branch with
+  reference optimality of `9.0e7`, `1494`, `350` and `212`. No tolerance was
+  changed.
+- Reports updated: `issues/weighted-scale-drift.md`,
+  `issues/weighted-rmse-persistence.md`, `issues/pfid-runtime-memory-profile.md`,
+  `issues/final-validation-run.md`, `issues/README.md`, root `README.md`,
+  `validation/release-decision-report.md` and this log. No commit made.
+
+## 2026-09-13 — Restore semantic compare-results CI
+
+- Added schema-selected external comparison for v0.7 monolithic and v0.8 split
+  layouts; closed fail-open input, missing-file, empty-contract, coordinate and
+  non-finite handling. Exported standalone payload/tests to the staging validator
+  checkout. Fixed action selection and replaced floating validator use with the
+  checked-out gitlink (publication/update still required).
+- Fresh `ci-restore-20260913-000749` runs pass 11/11 notebooks on each branch.
+  Report `validation/comparisons/ci-restore-20260913-000749/main-staging-accepted.json`
+  has 8 PASS, 6 EXPECTED_DIFFERENCE, no missing artifacts or regressions.
+- Explicitly revised only spectral-guidance tolerance to 2e-6 after reproducing
+  its documented 1.2572461877946428e-6 optimizer-path drift; retained the original
+  failing report. Refreshed source revision contract; no optimizer edits.
+- Tests: 56 passed, one opt-in test skipped; standalone action tests 19 passed.
+- Prepared hashed fresh v0.7 gold-standard candidate. Historical gold is stale
+  for the maintained two-dataset leaf and guidance. No commits or publication;
+  see `issues/compare-results-ci.md` for deployment dependencies and two-path CI.
+
+## 2026-09-12 — Historical run cleanup
+
+- Removed the authorized historical case-study raw run directories from
+  `validation/runs/`, freeing approximately 14.9 GB. Retained comparison
+  reports and current canonical evidence were not removed; a fresh validation
+  run will provide replacement raw provenance.
+
 ## 2026-09-09 â€” Split residual evidence by dataset role
 
 - Reviewed the paired final-allfits-20260906-132646Z reports and captured

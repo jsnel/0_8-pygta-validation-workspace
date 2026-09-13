@@ -14,7 +14,20 @@ Look at the [issue brief](../../issues/rates-k3d2-identifiability.md), [referenc
 
 **Why optional:** the fit has an accepted scenario-specific contract. Escalate if a reproducible transform/bound defect appears or a release claim relies on the numerical rate being scientifically meaningful.
 
-## B. Explain the small weighted-fit scale difference
+## B. Explain the small weighted-fit scale difference — answered 2026-09-13
+
+**Outcome:** the difference is where the optimizer chose to stop, not how the
+weights are applied. Both versions took the same 86 steps, stopped for the same
+reason, and ended on fits whose quality scores agree to about 16 decimal places
+(`chi_square` `5029.018034571807` against `5029.01803457181`). The cost
+difference is roughly 50 million times smaller than the change the optimizer
+treats as "still improving", so both runs are sitting on the same flat floor of
+the same valley. The third dataset is deliberately counted at `0.0025` of full
+weight, which is precisely why its scale is the one parameter free to wander:
+moving it barely changes the fit quality at all. The recommendation below was
+not needed to reach this conclusion and is retained only as optional extra
+assurance. Full evidence in the
+[weighted-scale brief](../../issues/weighted-scale-drift.md).
 
 **What it means:** some parts of a dataset count less heavily when choosing the best fit. Both versions produce close results, but the third dataset's scale is slightly different: `72.7362322` versus `72.7381204`, about 0.0026% relative difference. The curve difference `2.446285e-5` is inside the documented `3e-5` threshold.
 
@@ -28,6 +41,16 @@ Look at the [weighted-scale brief](../../issues/weighted-scale-drift.md), [weigh
 
 ## C. Broaden uncertainty, history and save/load tests
 
+**Partly addressed 2026-09-13:** one concrete instance of this gap turned out to
+be a real defect and is fixed. A saved result was silently dropping two
+diagnostics whenever they held their ordinary values — the dataset scale when it
+was exactly 1, and the weighted error when a dataset had no weights. Sixteen of
+28 saved datasets were missing the scale and 20 of 28 the weighted error, so a
+user reloading a result could not read them back without refitting. v0.7 always
+wrote both, so the fix restores the older behaviour at a cost of two numbers per
+dataset. See the [persistence brief](../../issues/weighted-rmse-persistence.md).
+The wider coverage described below is still worth doing.
+
 **What it means:** the curve can be correct even if a reported error bar, optimization history or saved diagnostic is incomplete. The current study is strongest on calculated curves and model migration. It does not prove every reporting feature behaves identically.
 
 This is a coverage gap, not a claim that every one of these features is broken. For example, a rate optimized in log space needs appropriate treatment when reporting uncertainty in the ordinary rate units. A saved result should also make its supported diagnostics available after reloading, without rerunning the fit.
@@ -38,9 +61,20 @@ Look at [optimization information and parameter errors](../../temp/pyglotaran-st
 
 **Why optional:** broader coverage can follow release unless a promised feature is known to return incorrect information or is essential to users retiring v0.7. A demonstrated defect should be assessed on its impact, not left optional merely because it was found in this list.
 
-## D. Reduce PFID runtime and memory use
+## D. Reduce PFID runtime and memory use — runtime addressed 2026-09-13, memory still open
 
-**What it means:** the migrated PFID notebook took about 180 seconds and 5,144 MiB peak memory, versus 70 seconds and 3,328 MiB for reference in the five-run profile. This does not mean that each optimizer step is 2.57 times slower. Staging also performs two substantial dry runs and constructs more result arrays.
+**Update:** the staging optimizations of 12 September cut the notebook from
+about 180 seconds to about 137 seconds, bringing it from 2.57 to **1.93 times**
+the reference time. Nearly all of the gain is in the larger linked fit, whose
+dry run and real fit each fell from roughly 59 seconds to roughly 23 seconds.
+**Peak memory did not move**: 5,144 MiB before, 5,131 MiB after, still about
+55% above reference. Average memory during the run did fall by 14%, which fits
+a picture of fewer intermediate arrays being held at once without a lower
+high-water mark. So the remaining work here is memory only, and the allocation
+responsible for the peak is still unidentified. New measurements are in
+`validation/benchmarks/memory-profile-postopt/`.
+
+**What it means:** the migrated PFID notebook originally took about 180 seconds and 5,144 MiB peak memory, versus 70 seconds and 3,328 MiB for reference in the five-run profile. This does not mean that each optimizer step is 2.57 times slower. Staging also performs two substantial dry runs and constructs more result arrays.
 
 The instrumented evidence shows three objectives and 17 dataset SVD calculations in the larger staging fit. It does not identify the exact allocation responsible for the memory peak. Detailed instrumentation also slows execution, so its timings should not be treated as ordinary runtime measurements.
 

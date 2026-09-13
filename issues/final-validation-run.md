@@ -1,5 +1,18 @@
 # Final main-versus-staging validation — 2026-09-06
 
+## Latest complete rerun — 2026-09-13
+
+The [fresh PR-readiness report](pr-readiness-20260913.md) supersedes the historical
+counts below for current-tree conclusions: **23/23 notebooks pass per branch**,
+all 14 common leaves are accepted, and all 40 case-study fits are captured per
+branch. Strict fitted-data agreement is 32/40; 36/40 are within the documented
+0.1% band. Four budget-truncated fits still exceed that band. Staging now uses
+its locked scientific stack; the refreshed MCL final measured maximum is
+`6.62769e-6`, so the September 12 strict-pass statement does not hold for this
+environment. Ready to draft the PR with the report's explicit pre-merge checklist.
+
+The remainder of this document retains the earlier evidence and interpretation.
+
 All 23 selected notebooks passed on each branch, and the common examples meet their semantic acceptance contract. The case studies retain 11 fitted-data differences above `1e-6`, so this run does not establish unconditional scientific equivalence across all studies. The separate runtime benchmark is complete and remains report-only.
 
 ## Scope and provenance
@@ -149,7 +162,12 @@ The initial case-study batch exposed a validation-runner collision: the streak s
 
 `validation/case_studies/run_case_study.py` now namespaces captures by notebook stem, removing the staging `_v08` suffix so branch labels still match. This changes only validation-side save paths. The default standalone instrumentation API is preserved. A regression test covers two notebooks with the same result variable and fit index. The full validation suite passes: 37 passed, 1 skipped; focused staging optimizer/activation/PFID tests pass: 35 passed.
 
-The first case-study batch is retained under `validation/runs/case-studies/final-20260906-131441Z/` as superseded evidence. All case studies were restarted under `validation/runs/case-studies/final-allfits-20260906-132646Z/`. Final comparisons use only real-fit captures declared by these fresh runner manifests, excluding historical and duplicate native saves copied with sources.
+The first case-study batch was previously retained under
+`validation/runs/case-studies/final-20260906-131441Z/` as superseded evidence;
+its raw artifacts were removed during validation-run cleanup. All case studies
+were restarted under `validation/runs/case-studies/final-allfits-20260906-132646Z/`.
+Final comparisons use only real-fit captures declared by these fresh runner
+manifests, excluding historical and duplicate native saves copied with sources.
 
 ## Known residual implementation issue
 
@@ -199,3 +217,74 @@ is the dataset-scale export convention; all-nine-species profiles agree after
 that convention is aligned. [Fresh report and rate table](../validation/comparisons/case-studies/20260912-110000Z-mcl-refresh/mcl-refresh-summary.md).
 No global acceptance count is recomputed by mixing this focused rerun with
 historical runs. Source cores remain `8f26be01` / `f6a091eb`.
+
+## 2026-09-13 — relative-magnitude assessment of the remaining differences
+
+The acceptance criterion applied here is a **relative** one: a difference below
+0.1% of the reference magnitude is acceptable. The fitted-data metric already
+is relative (RMS of differences divided by reference RMS), so the recorded
+values convert directly to percentages.
+
+### Common examples
+
+All 14 example scenarios are inside the band. Worst fitted-data normalized RMS
+across the whole matrix is `2.4463e-5` = **0.0025%**
+(`simultaneous_analysis_3d_weight`, dataset3). The only parameter difference
+above 0.1% anywhere is `study_transient_absorption/two_dataset_analysis` at
+0.708%, the documented non-identifiability in
+`issues/rates-k3d2-identifiability.md`; its fitted data agrees to 0.00076%.
+
+`simultaneous_analysis_3d_weight` is now resolved — see
+`issues/weighted-scale-drift.md`. Both branches reach the same objective to
+5.4e-16 relative after an identical 86 function evaluations and an identical
+`ftol` termination; the `scale.3` difference of 0.0026% is movement along a
+flat direction of a heavily down-weighted dataset.
+
+### Case studies
+
+Of the 49 captured fits with a non-zero fitted-data difference, 13 exceed
+`1e-6` but only **8 exceed 0.1%**, and after the 2026-09-12 MCL refresh above
+supersedes the three MCL rows, **4 unique fits remain** (the 2023 linked fit is
+captured twice under two result paths):
+
+| Fit | Worst difference | Role | Evaluations ref/stg | Termination |
+|---|---:|---|---:|---|
+| 2023 linked fit | 4.3105% guide / 0.3824% measured | Both | 2/2 | max evaluations, both |
+| Streak steps 1–2, fit 4 | 0.8027% | Measured | 7/7 | max evaluations, both |
+| Streak steps 1–2, fit 5 | 0.3526% | Measured | 7/7 | max evaluations, both |
+| Streak steps 1–2, fit 6 | 0.1969% | Measured | 7/7 | max evaluations, both |
+
+The refreshed MCL fits are now `2.83e-8` and `7.55e-8` on measured data and at
+worst `9.35e-6` = **0.00093%** on guidance, all inside the band.
+
+### The discriminating variable is convergence, not correctness
+
+Every fit above 0.1% terminated on **"The maximum number of function
+evaluations is exceeded"** on at least one branch. None is at a minimum; the
+reference first-order optimality values are `9.0e7`, `1494`, `350` and `212`
+respectively. Comparing two deliberately truncated optimizer trajectories
+compares intermediate iterates, not solutions, and any difference in the linear
+algebra path moves the iterate.
+
+The contrast with converged fits is sharp. Where both branches reach a
+`ftol`/`gtol` condition, the objective agrees to between 1e-15 and 1e-16
+relative and fitted data to 1e-8 or better. Within the streak study itself,
+the steps 3–4 fits, which do converge, agree to `1.7e-8` and `8.6e-9`, while
+the truncated steps 1–2 intermediates diverge by 0.2–0.8%. The final streak
+measured fits pass.
+
+The one fit whose *termination differed* between branches is the MCL spectral
+fit 2 in the superseded Sep-6 capture (reference reached `ftol` at 20
+evaluations, staging hit the cap at 25). The 2026-09-12 refresh resolves it.
+
+### Status
+
+No unconditional scientific-equivalence claim is made for the truncated
+case-study intermediates, and none is needed: they are not converged fits on
+either branch. The outstanding work is to confirm that the four remaining fits
+converge to agreeing solutions when given an adequate budget, as was done for
+the MCL first fit (200-budget pair reaching `ftol` at 21/21 evaluations and
+agreeing to `1.14e-8`). Until then these rows stay classified as
+budget-truncated intermediates rather than as numerical differences between
+the implementations. No tolerance was changed and no parameters were
+post-processed.

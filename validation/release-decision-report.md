@@ -6,6 +6,11 @@ results for all 23 notebooks per branch at optimized staging `f6a091eb`.
 
 Evidence review: 6 September 2026. Workspace HEAD at review: `a58aeaf3397492df5a4feb7c56d0b81cf5b3131f`. This is a review of retained evidence, with no new scientific runs, tolerance edits, core changes, branch changes, or commits. Existing working changes and generated artifacts were preserved.
 
+The historical case-study raw run directories referenced below were intentionally
+purged on 12 September 2026 to make room for a fresh validation run. The
+comparison reports remain available; raw-run links in this historical report
+should be treated as archival references until the new run replaces them.
+
 **Recommendation: accept v0.8 as sufficiently equivalent for the established common-example scope, with the explicitly accepted spectral-guidance exception. Do not yet claim repository-wide scientific equivalence or retire v0.7 unconditionally.** Several external publication/protocol fits still have substantial, unclassified fitted-data differences. Their successful execution is valuable migration evidence, but does not settle scientific parity. A release with a clearly limited support scope is defensible; promotion coupled to complete v0.7 retirement needs the blockers below resolved or explicitly dispositioned by the release owner.
 
 ## Decision basis and provenance
@@ -87,14 +92,14 @@ External source bases are streak `dcad534e0f6c809c9b7aa03c646ea1796192a0b7`, TA 
 
 | Category | Finding and disposition |
 |---|---|
-| Representation / persistence | v0.7 monolithic NetCDF versus v0.8 split results; dimension aliases, label order, CLP naming, legacy species colors, omitted default scale/weighted RMSE. External loaders retain raw evidence and mark derived fields. This supports compatible scientific consumption, not identical persistence/API schemas. [Persistence brief](../issues/weighted-rmse-persistence.md) remains open. |
+| Representation / persistence | v0.7 monolithic NetCDF versus v0.8 split results; dimension aliases, label order, CLP naming, legacy species colors. External loaders retain raw evidence and mark derived fields. This supports compatible scientific consumption, not identical persistence/API schemas. The omitted default scale/weighted RMSE is **repaired as of 2026-09-13**: it was an unintentional `exclude_defaults=True` suppression, and the staging core now persists both scalars in every leaf as v0.7 does. [Persistence brief](../issues/weighted-rmse-persistence.md) is resolved. |
 | Parameter/decomposition ambiguity | Common 3d/6d fits agree while raw matrices/CLPs or parameters differ. The historical two-dataset example exposed an unnecessary `rates.k3d2` path; the maintained refined OC/COC model removes it along with `b.1`, `b.2`, and `rates.k1sum`. Fresh focused paired results contain no `rates.k3d2` and have worst fitted-data normalized RMS `8.8193e-6` under `2e-5`. Remaining raw scale differences are bounded optimizer/representation evidence. [Identifiability brief](../issues/rates-k3d2-identifiability.md) is resolved for the maintained example. |
-| Numerical optimization | Weighted 3D reproduces `2.446285059310538e-5`, within its `3e-5` contract; scale.3 differs relatively by `2.5959433e-5`. [Weighted-scale brief](../issues/weighted-scale-drift.md) remains open. Existing synthetic weight/RMSE test verifies reconstruction, not the complete native optimizer or scale estimation in both engines. |
+| Numerical optimization | Weighted 3D reproduces `2.446285059310538e-5`, within its `3e-5` contract; scale.3 differs relatively by `2.5959433e-5` = 0.0026%. **Resolved 2026-09-13** as optimizer termination on a flat direction: both branches take 86 function evaluations, terminate on `` `ftol` ``, and agree on `chi_square` to `5.4e-16`, a cost difference `5.4e-8` times the solver's own termination threshold. `dataset3` is weighted `0.0025`, making `scale.3` the weakest-determined parameter. [Weighted-scale brief](../issues/weighted-scale-drift.md) is resolved; no core change and no tolerance change. The synthetic weight/RMSE test still verifies reconstruction only, not the complete native optimizer in both engines. |
 | Confirmed migration defects, repaired | Artifact/oscillation activation entries inflated kinetic normalization and distorted scales even when fitted data passed. The converter excludes only injected nonkinetic amplitudes; it must retain kinetic compartments belonging to other elements. Whole-cell CLP tolerance must be 2.1 rather than default 0.1. After repair, cost `512450.708544407` and 1,886 CLPs match, and Fig. 7 is pixel-identical. [Normalization](../issues/kinetic-activation-normalization.md), [CLP tolerance](../issues/case-study-clp-link-tolerance.md). |
 | Confirmed behavioral defects, repaired | Absent local relation labels are skipped as in v0.7; zero active free parameters produce successful single model evaluation instead of SciPy failure. [Relation brief](../issues/clp-relation-missing-label.md), [inactive-parameter brief](../issues/inactive-free-parameter-count.md). Inactive v0.7 scales explain the original MCL 28-versus-26 parameter count; the reference notebook now uses a first-fit parameter table without those scales so fresh comparison runs are 26 versus 26. They do not explain the historical MCL fitted-data differences. |
 | Confirmed current result-state defect | Staging result construction retains the last finite-difference parameter vector instead of restoring the accepted optimizer vector. Spectral fit effect is `9.5191e-10` normalized RMS, too small to explain the accepted threshold exception. It is pre-serialization state handling. Its broader impact remains unbounded; a focused fix/test or explicit separate release disposition is needed. [Isolation brief](../issues/spectral-guidance-current-tree.md). |
 | Native model-authoring limitation | Artifact/oscillation amplitudes share the activation namespace with kinetic populations. Migrated models exclude them correctly, but native authors can silently change normalization unless exclusions are explicit. Resolve/document the supported API contract; architectural redesign is optional. [Normalization brief](../issues/kinetic-activation-normalization.md). |
-| Unresolved scientific scope | Linked 25-dataset, MCL and listed protocol fits exceed `1e-6`. Limited evaluation budgets and different optimizer paths are plausible contributors, not validated root causes. Do not dismiss these as harmless representations, infer convergence from success flags, or extend SG-20260906 to them. |
+| Unresolved scientific scope | Linked 25-dataset, MCL and listed protocol fits exceed `1e-6`. Limited evaluation budgets and different optimizer paths are plausible contributors, not validated root causes. Do not dismiss these as harmless representations, infer convergence from success flags, or extend SG-20260906 to them. **Narrowed 2026-09-13:** under a 0.1% relative band, 8 of 49 non-zero case-study fits exceed it, and the 2026-09-12 MCL refresh supersedes three, leaving 4 unique fits. All four terminate on *maximum function evaluations* on at least one branch, with reference first-order optimality `9.0e7`, `1494`, `350` and `212`, so they compare truncated intermediates rather than solutions. This narrows the scope but does not by itself disposition them; adequate-budget convergence pairs are still required. |
 
 The normalization defect demonstrates why fitted-data agreement alone is insufficient: scale compensation can hide scientifically meaningful parameter errors. Conversely, strict elementwise residual mismatches near zero and raw decomposition shape differences do not alone prove incorrect predictions. Assess parameters, reconstruction, costs, labels, workload, and termination together.
 
@@ -257,4 +262,60 @@ Plain-language companion documents explain each item's evidence, relevant code, 
 1. **Blocker for unconditional v0.7 retirement:** disposition the linked 25-dataset fit, four MCL fits and listed protocol intermediates. Start with same-parameter objective/input/CLP-link/normalization checks, then optimizer trajectories and evaluation budgets; use new paired runs only where needed. Fix demonstrated defects, or obtain explicit scientific acceptance/scope exclusions for each unresolved difference. SG-20260906 is already accepted and needs no tolerance adjustment or model rollback.
 2. **Blocker for release integrity:** restore accepted optimizer parameters before result construction and add a focused regression, or obtain a separate documented release-owner disposition with bounded impact. The tiny spectral effect does not bound all models. Document correct native artifact/oscillation normalization and the supported metadata/compatibility contract.
 3. **Blocker for promotion handoff:** identify the immutable release candidate across core/examples/extras and shipped adapters; reconcile historical extras failures against that candidate. After any release fixes, run the focused checks and [full common handoff](AGENT_RERUN.md), retaining SG-20260906 as an explicit exception, plus affected paired case studies. Archive a hash-verified evidence bundle and migration instructions; only then perform the separately authorized staging-to-main promotion/tag and retire v0.7 while preserving its reproducible reference. No branch/commit action is taken by this report.
-4. **Optional follow-ups:** investigate the weighted scale mechanism; broaden uncertainty/history and persistence round-trip coverage; optimize PFID memory/runtime and benchmark the final candidate if runtime changes; consider separating nonkinetic amplitudes from kinetic activation in the API. These do not require forcing parameters or serialized layouts into equality.
+4. **Optional follow-ups:** ~~investigate the weighted scale mechanism~~ (done 2026-09-13; flat-direction termination, see addendum); broaden uncertainty/history and persistence round-trip coverage; ~~optimize PFID runtime~~ (done; ratio now 1.93x) while **PFID peak memory remains open**; benchmark the final candidate if runtime changes; consider separating nonkinetic amplitudes from kinetic activation in the API. These do not require forcing parameters or serialized layouts into equality.
+
+## Addendum — 2026-09-13 investigation closure
+
+Three open items were investigated against a **0.1% relative** acceptance band.
+Percentages are of the reference magnitude; the fitted-data metric is already
+relative. No tolerance was changed, no parameters were post-processed, and no
+commit was made.
+
+**Weighted 3D scale drift — resolved, no core change.** Cause 5 of the brief's
+enumeration, optimizer termination on a flat direction. Both branches run 86
+function evaluations and terminate on `` `ftol` ``; `chi_square` agrees to
+`5.4255e-16` relative and `reduced_chi_square` to `6.3322e-16`. The cost
+difference of `1.3642e-12` is `5.4e-8` times the solver's `ftol * cost`
+threshold of `2.5145e-5`. `dataset3` carries `weights: [{value: 0.0025,
+global_interval: [400, 600]}]`, a 400-fold down-weighting, so its residual
+contribution is scaled by `6.25e-6` and `scale.3` (≈72.7) is the weakest-
+determined parameter in the problem. The 3.43% spread in `optimality` is
+consistent with a small gradient near a flat minimum. Causes 1–4, 6 and 7 are
+excluded: inputs compare exactly (`max_abs = 0.0`), both schemes declare the
+same weight rules, weighted RMSE agrees to `2.9e-7` relative, and all other
+parameters pass at `rtol = 1e-4`.
+
+**Weighted-RMSE and default-scale persistence — repaired in the staging core.**
+Confirmed an unintentional omission rather than a schema decision. Two
+mechanisms: `create_result_metadata` returned `None` with no `weighted_residual`
+present (`unweight_result_dataset` returns early when the weight is `None`),
+and `model_dump(exclude_unset=True, exclude_defaults=True, ...)` then also
+dropped `scale == 1`. Census of the final run's 28 leaves: 16 omitted
+`dataset_scale`, 20 omitted `weighted_root_mean_square_error`. v0.7
+(`optimization_group.py:179`) writes both unconditionally and falls back to the
+unweighted RMSE, so the fix restores the reference contract. Cost is two float
+scalars per leaf; no array is persisted. Verified end-to-end on
+`simultaneous_analysis_3d_weight`, where `dataset1` now records `scale=1.0` and
+weighted RMSE `0.2537817152762107` equal to its RMSE, against v0.7's `1.0` and
+`0.2537816922132262`. The fit is unchanged at 86 evaluations and cost
+`2.5145e+03`. Core suite 455 passed / 9 xfailed; validation suite 56 passed /
+1 skipped; ruff clean.
+
+**PFID runtime — superseded; memory unchanged.** The Sep-1 profile predated the
+`f601c1a4` and `5dd45d5f` staging optimizations of Sep 12. Reprofiling
+`879c5bce` with the same five-repetition protocol gives staging
+`180.05 s → 137.32 s` (−23.7%) and a staging-to-reference ratio of
+**2.57x → 1.93x**, concentrated in the second model's linked fit
+(`58.66 → 23.24 s` and `60.06 → 23.26 s`). Peak RSS is effectively unchanged at
+`5143.5 → 5130.8 MiB`, so the **+55% peak-memory gap and its allocation-site
+attribution stay open**; mean sampled RSS fell 14%. Artifacts under
+`validation/benchmarks/memory-profile-postopt/`. The staging notebook hash
+differs from the Sep-1 run and the rerun passed `--record-fit-calls`, so this is
+not a byte-identical replay.
+
+**Scope of the relative assessment.** All 14 common example leaves pass at
+0.1%, worst `2.4463e-5` = 0.0025%. The single parameter difference above the
+band is `rates.k3d2`'s documented non-identifiability at 0.708%, whose fitted
+data agrees to 0.00076%. Among case studies, 4 unique fits remain above 0.1%
+after the MCL refresh, all budget-truncated. This narrows but does not close
+the unresolved-scope blocker in item 1 above.

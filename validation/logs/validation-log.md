@@ -1,5 +1,60 @@
 # Validation log
 
+## 2026-09-13 — three investigations closed, PFID reprofiled
+
+- Reference/staging cores unchanged at `8f26be01` / staging `879c5bce`, which
+  contains the `f601c1a4` and `5dd45d5f` optimizations. The reference tree was
+  read only; its pre-existing working-tree state is unmodified.
+- **Weighted 3D scale drift resolved from retained evidence**, no rerun of the
+  fit matrix needed. `simultaneous_analysis_3d_weight` result files on both
+  branches show 86 function evaluations, `` `ftol` `` termination, and
+  `chi_square` `5029.018034571807` versus `5029.01803457181` — `5.4255e-16`
+  relative. `scale.3` differs by `2.5959e-5` = 0.0026% because `dataset3`
+  carries weight `0.0025`. Cause is optimizer termination on a flat direction;
+  no core change, no tolerance change.
+- **Staging core change (uncommitted):** `glotaran/optimization/objective.py`
+  now always computes `weighted_root_mean_square_error`, falling back to the
+  unweighted residual, and `OptimizationResultMetaData` gained a
+  `model_serializer(mode="wrap")` so `exclude_defaults=True` can no longer drop
+  `scale` or the weighted RMSE. `tests/builtin/io/yml/test_yml.py` updated —
+  `test_result_round_tripping` had asserted the omission. Staging `changelog.md`
+  entry added.
+- Verification of that change: core suite 455 passed, 9 xfailed; validation
+  suite 56 passed, 1 skipped; `ruff check` and `ruff format --check` clean.
+  End-to-end rerun of `simultaneous_analysis_3d_weight` persists
+  `dataset1` `scale=1.0` and weighted RMSE `0.2537817152762107` (equal to its
+  RMSE) against v0.7's `1.0` / `0.2537816922132262`; the fit is unchanged at 86
+  evaluations, `` `ftol` ``, cost `2.5145e+03`, optimality `9.65e-04`.
+- **PFID profile rerun**, five repetitions per branch, into
+  `validation/benchmarks/memory-profile-postopt/`. Staging mean duration
+  `180.05 s → 137.32 s`; ratio to reference `2.57x → 1.93x`; mean peak RSS
+  `5143.5 → 5130.8 MiB` (unchanged); mean sampled RSS `3428.2 → 2949.2 MiB`.
+  Reference is flat at `69.94 → 71.16 s`. Per-call: the second model's dry run
+  and real fit drop `58.66 → 23.24 s` and `60.06 → 23.26 s`, all still at one
+  function evaluation. The staging notebook hash differs from the 2026-09-01
+  profile and the rerun passed `--record-fit-calls`; both caveats are recorded
+  in the issue. The peak-memory gap remains open.
+- **Relative-magnitude assessment** at a 0.1% band: all 14 common leaves pass
+  (worst `2.4463e-5` = 0.0025%); 8 of 49 non-zero case-study fits exceed 0.1%,
+  reduced to 4 unique fits once the 2026-09-12 MCL refresh supersedes three.
+  All four terminate on *maximum function evaluations* on at least one branch.
+- Documentation updated: the three issue briefs, `issues/final-validation-run.md`,
+  `issues/README.md`, root `README.md`, `changelog.md` and
+  `validation/release-decision-report.md`. No commit made.
+
+## 2026-09-12 — generated-run cleanup
+
+- Removed 11.8 GB of unreferenced pytest/test scratch, debug case-study,
+  superseded common-run, and early exploratory case-study artifacts under
+  `validation/runs/`. Canonical final runs, documented diagnostics, and
+  currently relevant case-study evidence were retained.
+- Removed the separately authorized historical case-study raw runs listed in
+  the cleanup handoff, another 14.9 GB. Their generated comparison reports
+  were not removed; a future validation run will replace their raw provenance.
+- A small set of legacy pytest/test directories and two partially inaccessible
+  case-study directories could not be removed because their filesystem ACLs
+  deny access; they remain listed in the cleanup handoff.
+
 ## 2026-09-06 — Final main-versus-staging run
 
 - Reference/staging cores: `8f26be01d5a6ce63ec2556469ac3facc2d2cee68` /
@@ -149,7 +204,9 @@ Generated [v07-v08-detailed.md](../comparisons/v07-v08-detailed.md) and its JSON
 - Full staging suite: `448 passed, 9 xfailed`.
 - Restored the previously documented staging-example parity inputs in the checked-out examples tree: target budget 10, spectral-guidance budget 21, two-dataset budget 17, DOAS saving, and four separately saved spectral-constraint leaves.
 - Corrected the staging orchestration contract pin to the checked-out revision `be1c861cfce21db94e1a360e882df4c8e942a40e`.
-- Fresh notebook evidence under `validation/runs/{main,staging}/20260712-175136`: v0.7.4 `11/11`, staging `11/11`.
+- Fresh notebook evidence under the removed raw run
+  `validation/runs/{main,staging}/20260712-175136` recorded v0.7.4 `11/11`
+  and staging `11/11`; the semantic and runtime reports remain retained.
 - Semantic report `validation/comparisons/v07-v08-20260712-175136.json`: `8 PASS`, `6 EXPECTED_DIFFERENCE`, zero `REGRESSION`, zero `BASELINE_FAILURE`, all 14 declared leaves present, acceptable `true`.
 - Validation-side regression tests: `10 passed`.
 - Runtime report `validation/benchmarks/v07-v08-runtime-20260712-175136/runtime.json`: `REPORT_ONLY`, 12 successful workers, 150 samples, 15 summaries, all function-evaluation workloads matched, and no warnings.
@@ -458,3 +515,47 @@ Generated [v07-v08-detailed.md](../comparisons/v07-v08-detailed.md) and its JSON
   Native result/notebook artifact audit: 149 checks, zero failures. Added
   `validation/run_mcl_convergence.py` and `validation/analyze_mcl_first_fit.py`;
   both executed successfully. No production inputs/core edits or commit.
+
+## 2026-09-13 — Restore semantic compare-results CI
+
+- Added schema-selected external comparison for v0.7 monolithic and v0.8 split
+  layouts; closed fail-open input, missing-file, empty-contract, coordinate and
+  non-finite handling. Exported standalone payload/tests to the staging validator
+  checkout. Fixed action selection and replaced floating validator use with the
+  checked-out gitlink (publication/update still required).
+- Fresh `ci-restore-20260913-000749` runs pass 11/11 notebooks on each branch.
+  Report `validation/comparisons/ci-restore-20260913-000749/main-staging-accepted.json`
+  has 8 PASS, 6 EXPECTED_DIFFERENCE, no missing artifacts or regressions.
+- Explicitly revised only spectral-guidance tolerance to 2e-6 after reproducing
+  its documented 1.2572461877946428e-6 optimizer-path drift; retained the original
+  failing report. Refreshed source revision contract; no optimizer edits.
+- Tests: 56 passed, one opt-in test skipped; standalone action tests 19 passed.
+- Prepared hashed fresh v0.7 gold-standard candidate. Historical gold is stale
+  for the maintained two-dataset leaf and guidance. No commits or publication;
+  see `issues/compare-results-ci.md` for deployment dependencies and two-path CI.
+
+- Legacy reproduction: historical gold against fresh main passes 577 tests; fresh main against staging reproduces six failures and 26 missing NetCDF paths. Historical gold against staging has five failures and 24 missing paths after its blocklist. All logs retained in the same evidence directory.
+
+## 2026-09-13 — Fresh full validation for staging-to-main PR readiness
+
+- Evidence: `validation/runs/pr-readiness-20260913-093010Z/`; 23/23 notebooks
+  passed per branch (11 examples plus 12 case studies). Fresh paired outputs only.
+- Core revisions: reference `8f26be01d5a6ce63ec2556469ac3facc2d2cee68`, staging
+  `879c5bce399b7195b7ed2b0aece9234d803a74d9`, including pre-existing dirty-tree
+  changes captured in source snapshots. Source state unchanged during execution.
+- Common comparison: 14/14 leaves, 8 PASS, 6 EXPECTED_DIFFERENCE, zero regressions
+  or missing artifacts. All 28 staging datasets persist scale and weighted RMSE.
+- Case studies: 40 captures per branch, 32/40 fitted-data comparisons within
+  `1e-6`, 27/40 with exact inputs, 22/40 satisfying both. The separate 0.1% band
+  includes 36/40 fits; four documented budget-truncated exceedances remain.
+  MCL final measured maximum is now `6.62769e-6`; guide maximum `5.23416e-4`.
+- Reference NumPy/SciPy/Numba/llvmlite: 2.2.6/1.15.3/0.63.1/0.46.0; staging:
+  2.0.1/1.14.1/0.60.0/0.43.0, matching its lock. No environment edits.
+- Tests: validation 56 passed, 1 skipped; focused persistence 7 passed in an
+  isolated system-temp directory (earlier workspace-temp path assertion and
+  default-temp permission failures retained). Schema/load checks: 34 passed.
+  Artifact audit: 3,761 files, zero missing/hash mismatches; example result and
+  installed-source hashes verified; validation-tool hashes unchanged.
+- Readiness: draft the PR with explicit remaining CI publication/pins, case-study
+  disposition and result-integrity follow-ups. See `issues/pr-readiness-20260913.md`.
+  No core/notebook/tolerance/budget changes, staging, commits or runtime benchmark.

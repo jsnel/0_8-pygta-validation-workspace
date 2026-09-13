@@ -22,11 +22,21 @@ def compare_arrays(expected: xr.DataArray, current: xr.DataArray, *, rtol: float
     if expected.dims != current.dims or expected.shape != current.shape:
         record["status"] = "structural_mismatch"
         return record
+    for dimension in expected.dims:
+        if (dimension in expected.coords) != (dimension in current.coords):
+            record["status"] = "structural_mismatch"
+            return record
+        if dimension in expected.coords and (not expected.get_index(dimension).is_unique or not current.get_index(dimension).is_unique or not np.array_equal(expected.coords[dimension], current.coords[dimension])):
+            record["status"] = "structural_mismatch"
+            return record
     expected_values = np.asarray(expected.values)
     current_values = np.asarray(current.values)
     if expected_values.dtype.kind in "OUS" or current_values.dtype.kind in "OUS":
         equal = bool(np.array_equal(expected_values, current_values))
         record.update({"status": "pass" if equal else "different", "exact": equal})
+        return record
+    if not np.all(np.isfinite(expected_values)) or not np.all(np.isfinite(current_values)):
+        record.update(status="nonfinite", normalized_rms=float("inf"))
         return record
     difference = np.abs(expected_values - current_values)
     expected_scale = float(np.sqrt(np.nanmean(np.square(expected_values)))) if expected_values.size else 0.0

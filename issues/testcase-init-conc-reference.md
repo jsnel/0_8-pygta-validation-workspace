@@ -75,9 +75,9 @@ The original notebooks, parameter/model inputs, and supplied results are unchang
 
 The isolated unmodified execution fails in notebook cell 8 (zero-based), loading
 the supplied parameter CSV: `Parameter.__init__() got an unexpected keyword
-argument 't-value'`. No optimizer call was reached. Full traceback, executed
-notebook, command, environment, source diff, and artifact hashes are under
-`validation/runs/case-studies/20260905-initconc-02/`.
+argument 't-value'`. No optimizer call was reached. The historical raw
+artifacts were removed during validation-run cleanup; the failure details remain
+recorded here.
 
 Static inspection also establishes later obstacles:
 

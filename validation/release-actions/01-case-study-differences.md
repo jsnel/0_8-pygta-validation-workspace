@@ -2,6 +2,44 @@
 
 Companion to action 1 in the [release report](../release-decision-report.md). Written 6 September 2026 from existing evidence; no new fits were run.
 
+## Update, 13 September 2026: the list is shorter and the common factor is clear
+
+Two things have changed since this was written.
+
+First, the MCL notebooks were re-run on 12 September with corrected inputs, and
+their differences dropped to at most 0.00093% of the reference curve. They are
+no longer in the problem set.
+
+Second, applying a relative yardstick rather than the fixed `1e-6` threshold —
+treating anything under 0.1% of the reference curve as acceptable — leaves
+**four fits**, in two studies: the 2023 linked fit and streak fits 4, 5 and 6.
+
+The common factor is that **every one of them was stopped early by its own
+evaluation budget**, on both versions, before the optimizer had settled. The
+software reports this explicitly as "The maximum number of function evaluations
+is exceeded". How far each was from a finished answer is visible in its
+optimality figure — roughly 90,000,000 for the 2023 linked fit, and 1494, 350
+and 212 for the three streak fits. A finished fit has a figure near zero.
+
+This matters because comparing two deliberately half-finished calculations
+compares where each one happened to be paused, not what answer each would reach.
+The 2023 linked fit is the clearest case: it was allowed just **two**
+evaluations, and it produces the largest difference in the entire study.
+
+The contrast with finished fits is stark. Where both versions are allowed to
+run to completion, they agree to about fifteen decimal places on fit quality.
+Within the streak study itself, the steps 3–4 fits do finish, and they agree to
+`1.7e-8` and `8.6e-9` — while the unfinished steps 1–2 fits alongside them
+differ by 0.2–0.8%. The same held for the MCL first fit: given a 200-evaluation
+budget, both versions finished after 21 evaluations and agreed to `1.14e-8`.
+
+**This narrows the recommendation below rather than replacing it.** The specific
+next step is now to re-run these four fits with a budget large enough for both
+versions to finish, and confirm they converge to the same answer, exactly as was
+done for the MCL first fit. Until that is done these rows should be described as
+budget-truncated intermediates, not as differences between the two engines. No
+tolerance was changed and no acceptance is claimed on this basis alone.
+
 ## The issue in simple terms
 
 Several notebooks finish successfully on both versions, but their calculated curves are not quite the same. A notebook finishing means that the software ran. It does not mean that both versions reached the same scientific answer.

@@ -11,8 +11,7 @@ import numpy as np
 import pandas as pd
 import yaml
 
-from compatibility.load_v07 import load_v07_result
-from compatibility.load_v08 import load_v08_result
+from compatibility.load_result import load_result
 from compatibility.metrics import compare_arrays
 
 
@@ -147,8 +146,16 @@ def _scenario_result(main_root: Path, staging_root: Path, specification: dict[st
     if not staging_path.is_dir() or not (staging_path / "result.yml").is_file():
         record.update({"status": "REGRESSION", "reason": "declared v0.8 result leaf is missing"})
         return record
-    expected = load_v07_result(main_path, scenario)
-    current = load_v08_result(staging_path, scenario)
+    for path, failure_status in ((main_path, "BASELINE_FAILURE"), (staging_path, "REGRESSION")):
+        try:
+            view = load_result(path, scenario)
+        except (OSError, ValueError, KeyError, TypeError, yaml.YAMLError) as error:
+            record.update(status=failure_status, reason=f"{path}: {error}")
+            return record
+        if failure_status == "BASELINE_FAILURE":
+            expected = view
+        else:
+            current = view
     fit_tolerance = float(specification.get("fitted_data_normalized_rms", defaults["fitted_data_normalized_rms"]))
     parameter_rtol = float(specification.get("parameter_rtol", defaults["parameter_rtol"]))
     parameter_atol = float(specification.get("parameter_atol", defaults["parameter_atol"]))
@@ -165,7 +172,7 @@ def _scenario_result(main_root: Path, staging_root: Path, specification: dict[st
         for variable in SEMANTIC_VARIABLES:
             if variable not in expected_dataset.variables or variable not in current_dataset.variables:
                 variables[variable] = {"status": "missing"}
-                if variable in {"data", "fitted_data"}:
+                if variable in expected_dataset.variables or variable in {"data", "fitted_data"}:
                     failures.append(f"{label}/{variable}")
                 continue
             variable_rtol = 0.0 if variable == "data" else DEFAULT_RTOL
@@ -176,8 +183,10 @@ def _scenario_result(main_root: Path, staging_root: Path, specification: dict[st
                 rtol=variable_rtol,
                 atol=variable_atol,
             )
+        if variables.get("data", {}).get("status") != "pass":
+            failures.append(f"{label}/data")
         fit_metric = variables.get("fitted_data", {})
-        if fit_metric.get("status") == "structural_mismatch" or fit_metric.get("normalized_rms", float("inf")) > fit_tolerance:
+        if fit_metric.get("status") in {"structural_mismatch", "nonfinite"} or not np.isfinite(fit_metric.get("normalized_rms", float("inf"))) or fit_metric.get("normalized_rms", float("inf")) > fit_tolerance:
             failures.append(f"{label}/fitted_data")
         datasets.append(
             {
@@ -225,7 +234,14 @@ def _scenario_result(main_root: Path, staging_root: Path, specification: dict[st
 
 
 def compare_results(main_root: Path, staging_root: Path, manifest: dict[str, Any] | None = None) -> dict[str, Any]:
-    manifest = manifest or load_manifest()
+    manifest = load_manifest() if manifest is None else manifest
+    specifications = manifest.get("scenarios", [])
+    if not specifications or len({item["id"] for item in specifications}) != len(specifications):
+        raise ValueError("Contract must declare a nonempty set of unique scenarios")
+    for item in specifications:
+        tolerance = float(item.get("fitted_data_normalized_rms", manifest.get("defaults", {}).get("fitted_data_normalized_rms", float("nan"))))
+        if not np.isfinite(tolerance) or tolerance < 0:
+            raise ValueError("Fit tolerance must be finite and nonnegative")
     defaults = manifest.get("defaults") or {}
     records = [_scenario_result(main_root, staging_root, item, defaults) for item in manifest.get("scenarios", [])]
     statuses = ("PASS", "EXPECTED_DIFFERENCE", "REGRESSION", "BASELINE_FAILURE", "BLOCKED")
