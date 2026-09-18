@@ -1,5 +1,20 @@
 # Validation changelog
 
+## 2026-09-17 — ST single spectral-temporal case study
+
+- Added reproducible ST notebook/model translation, same-basename schema
+  discovery, and preservation of global CLP dimensions in the plotting adapter.
+- Retained NNLS at both experiment and dataset levels; native results save to
+  fresh timestamped folders. Both notebooks execute fully with four figures.
+- Isolated SciPy 1.15.3 resolves a proven SciPy 1.14.1 singular NNLS failure;
+  the ordinary staging environment, core source and lock are unchanged.
+- All four staging fits agree with reference matrix/CLP reconstruction to
+  `4.2e-16`. Raw comparison remains REVIEW_REQUIRED for the reference residual
+  reshape and secondary metadata differences; no arrays or tolerances altered.
+- Fresh common validation: 11/11 notebooks each, all 14 leaves accepted.
+  Final validation tests: 62 passed, one skipped. Revisions and artifact paths
+  are in `issues/testcase-stsingle.md`.
+
 ## 2026-09-13 — Fresh full PR-readiness validation
 
 - Re-executed all 23 notebooks per branch in `validation/runs/pr-readiness-20260913-093010Z/`;

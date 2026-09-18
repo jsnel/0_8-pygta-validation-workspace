@@ -8,6 +8,12 @@ installations are independent.
 
 ## Current baseline
 
+The [ST single case study](issues/testcase-stsingle.md) now runs on staging using
+its dedicated SciPy 1.15.3 environment. Its fitted data matches reconstruction
+from the reference matrices and CLPs to `4.2e-16`; raw serialized comparison
+retains a documented v0.7 residual-reshape discrepancy. The one-evaluation
+budget is unchanged. The September 17 common rerun accepts all 14 leaves.
+
 The [fresh September 13 PR-readiness run](issues/pr-readiness-20260913.md) passes
 all 23 selected notebooks per branch and accepts all 14 common example leaves
 (8 PASS, 6 EXPECTED_DIFFERENCE). All 40 case-study fits are captured: 32 meet

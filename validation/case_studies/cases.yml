@@ -1,5 +1,13 @@
 version: 1
 repositories:
+  - slug: testcaseSTsingle
+    url: null
+    rationale: >-
+      User-selected single spectral-temporal target analysis with six kinetic
+      components, shifted spectral data, and one paired reference/staging
+      notebook.
+    notebooks:
+      - 20260915STsingle_State1_2_6comp_per_day2Olli_shifted.ipynb
   - slug: TestCaseInitConc
     url: null
     rationale: >-

@@ -38,7 +38,7 @@ def constant_call(node: ast.AST, function: str, constants: dict[str, str]) -> st
 
 def notebook_pairs(root: Path) -> dict[Path, Path | None]:
     pairs: dict[Path, Path | None] = {}
-    for notebook_path in sorted(root.rglob("*_v08.ipynb")):
+    for notebook_path in sorted(root.rglob("*.ipynb")):
         notebook = nbformat.read(notebook_path, as_version=4)
         constants: dict[str, str] = {}
         parameter_variables: dict[str, Path] = {}
@@ -56,6 +56,10 @@ def notebook_pairs(root: Path) -> dict[Path, Path | None]:
                 target = targets[0]
                 if isinstance(node.value, ast.Constant) and isinstance(node.value.value, str):
                     constants[target] = node.value.value
+                elif isinstance(node.value, ast.Name):
+                    aliased_scheme = scheme_variables.get(node.value.id)
+                    if aliased_scheme is not None:
+                        scheme_variables[target] = aliased_scheme
                 parameter = constant_call(node.value, "load_parameters", constants)
                 if parameter:
                     parameter_variables[target] = (notebook_path.parent / parameter).resolve()

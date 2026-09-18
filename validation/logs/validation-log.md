@@ -1,5 +1,24 @@
 # Validation log
 
+## 2026-09-17 — ST single migration and validation
+
+- Reference core `33c602cd2dcd07068391113d506df5cd2431a7b3`, staging core
+  `c71ebad0552c9fa8d0bfdc9a2d8f45e41a696f4a`; neither core was edited.
+- Reference run `validation/runs/case-studies/stsingle-20260917-065640/reference/`,
+  final staging `validation/runs/case-studies/stsingle-20260917-070313/staging/`:
+  one fit and four figures each, full execution passed. Six supplied input
+  files match exactly; 87 generated evidence artifacts verified.
+- Dedicated `.venv-stsingle` retains staging NumPy 2.0.1 and uses SciPy 1.15.3.
+  Same-matrix tests isolate the original SciPy 1.14.1 NNLS singularity.
+- Model translation keeps local spectra/global kinetics and explicitly sets
+  both solver levels to NNLS. The reference model/CLP reconstruction matches
+  staging to `4.2e-16`; raw report remains REVIEW_REQUIRED due to v0.7 residual
+  reshape and secondary CLP-count/parameter metadata differences.
+- Common run `20260917-065713`: 11/11 each, 14/14 accepted (8 PASS,
+  6 EXPECTED_DIFFERENCE). Final dedicated-runtime tests: 62 passed, one skipped.
+  See `issues/testcase-stsingle.md` for final tests,
+  reconstruction report and reproduction commands. No commits or benchmarks.
+
 ## 2026-09-13 — three investigations closed, PFID reprofiled
 
 - Reference/staging cores unchanged at `8f26be01` / staging `879c5bce`, which

@@ -31,6 +31,12 @@ returned unchanged. The semantic comparison loaders under
 `validation/compatibility` remain separate: they read persisted evidence rather
 than adapting live notebook objects.
 
+Spectral-temporal results may already use `clp_label` and a separate global
+CLP dimension. The projection preserves those axes and only renames the older
+`amplitude_label` dimension when present. See
+[`testcaseSTsingle`](../../issues/testcase-stsingle.md) for its dedicated
+SciPy 1.15.3 runtime and migration procedure.
+
 `simulate` resolves a named dataset in a v0.8 scheme and passes its library,
 parameters, coordinates and simulation options to the native simulator. On
 v0.7 it delegates to the original model-based simulator. `DataStore` provides
