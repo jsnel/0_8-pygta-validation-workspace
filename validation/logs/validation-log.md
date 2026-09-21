@@ -1,5 +1,25 @@
 # Validation log
 
+## 2026-09-19 — ST no-single validation
+
+- Selected the September 19 no-single notebook/model and latest parameter CSV;
+  retained the author's three-evaluation budget. Both single-amplitude notebooks
+  remain deferred pending `ism200/scale_list`.
+- Generated a staging notebook/model and reporting bridge. Installed the root
+  `pygta-local-extras` package editable without dependency upgrades in both
+  environments. No core or installed extras source changes.
+- Both full ST notebooks pass with all reporting cells and eight figures each.
+  Reference matrix/CLP reconstruction agrees with staging to `1.24e-8` normalized
+  RMS; raw serialized comparison remains REVIEW_REQUIRED for the proven reference
+  residual reshape and secondary metadata differences. All 30 protected files
+  remain unchanged; 95 generated artifact hashes verified.
+- Full validation-side tests: 62 passed, one skipped. Both discovered staging
+  schemas pass. Common rerun `20260919-230004`: 11/11 notebooks per branch,
+  8 PASS and 6 EXPECTED_DIFFERENCE leaves, no regressions or baseline failures.
+- See [the evidence brief](../../issues/testcase-st-no-single-20260919.md)
+  for source revisions, full case-study runs, reporting dependencies, and the
+  scientific comparison. No runtime-performance claim or commits were made.
+
 ## 2026-09-17 — ST single migration and validation
 
 - Reference core `33c602cd2dcd07068391113d506df5cd2431a7b3`, staging core

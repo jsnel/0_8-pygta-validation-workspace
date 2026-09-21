@@ -8,11 +8,12 @@ installations are independent.
 
 ## Current baseline
 
-The [ST single case study](issues/testcase-stsingle.md) now runs on staging using
-its dedicated SciPy 1.15.3 environment. Its fitted data matches reconstruction
-from the reference matrices and CLPs to `4.2e-16`; raw serialized comparison
-retains a documented v0.7 residual-reshape discrepancy. The one-evaluation
-budget is unchanged. The September 17 common rerun accepts all 14 leaves.
+The active ST case is now the author's [September 19 no-single notebook](issues/testcase-st-no-single-20260919.md),
+with its three-evaluation budget preserved. Its staging port uses the dedicated
+SciPy 1.15.3 environment and the workspace-root `pygta-local-extras` package.
+The single-amplitude notebooks remain deferred pending `ism200/scale_list`.
+The September 19 common rerun accepts all 14 leaves; the
+[September 17 ST evidence](issues/testcase-stsingle.md) describes older inputs.
 
 The [fresh September 13 PR-readiness run](issues/pr-readiness-20260913.md) passes
 all 23 selected notebooks per branch and accepts all 14 common example leaves

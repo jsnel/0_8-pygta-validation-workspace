@@ -161,6 +161,7 @@ def test_st_prepare_points_translated_notebook_at_generated_model(tmp_path: Path
     translated = nbformat.read(prepared["notebook"], as_version=4)
     code = "\n".join(cell.source for cell in translated.cells if cell.cell_type == "code")
 
-    assert "load_scheme('models/20260915STsingle_State1_2_6comp_day1_Olli_v08.yml')" in code
-    assert "load_model('models/20260915STsingle_State1_2_6comp_day1_Olli.yml')" not in code
-    assert "maximum_number_function_evaluations=1" in code
+    assert "load_scheme('models/20260915STno_single_State1_2_6comp_day1_Olli_v08.yml')" in code
+    assert "load_model('models/20260915STno_single_State1_2_6comp_day1_Olli.yml')" not in code
+    assert "load_parameters('models/20260919STsingle_State1_2_6comp_day1_Olli11_02.csv')" in code
+    assert "maximum_number_function_evaluations=3" in code
