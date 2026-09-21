@@ -98,12 +98,14 @@ def convert_result(native_result, scheme):
             weight = weight * xr.where(selected, float(weight_item.value), 1.0)
         dataset["weight"] = weight
         dataset["weighted_residual"] = residual * weight
-        dataset["clp"] = optimization_result.fit_decomposition.clp.rename(
-            amplitude_label="clp_label"
-        )
-        dataset["matrix"] = optimization_result.fit_decomposition.matrix.rename(
-            amplitude_label="clp_label"
-        )
+        def _legacy_clp_labels(array):
+            """Keep v0.8 CLP labels while accepting older amplitude dimensions."""
+            if "amplitude_label" in array.dims:
+                return array.rename(amplitude_label="clp_label")
+            return array
+
+        dataset["clp"] = _legacy_clp_labels(optimization_result.fit_decomposition.clp)
+        dataset["matrix"] = _legacy_clp_labels(optimization_result.fit_decomposition.matrix)
         kinetic_elements = [
             element
             for element in optimization_result.elements.values()

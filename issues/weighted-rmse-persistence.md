@@ -2,9 +2,10 @@
 
 ## Status
 
-Open. The compatibility layer makes the semantic comparison complete, but some
-v0.8 split result leaves omit metadata that v0.7 persists. Determine whether
-this is an intentional schema change or a v0.8 persistence/reporting bug.
+Resolved — 2026-09-13. The omission was unintentional, and v0.8 core now
+persists both fields in every dataset result. Confirmed as a persistence bug
+rather than a schema decision: v0.7 writes both unconditionally, and the two
+values are scalars. See "Resolution" below.
 
 ## Question
 
@@ -125,3 +126,130 @@ The fresh comparison at
 default weighted-RMSE and scale metadata through the compatibility layer while
 all declared leaves remain complete. The recent optimizer fixes did not change
 the persistence behavior, so this investigation remains open.
+
+## Resolution — 2026-09-13
+
+### Scope of the omission
+
+Census over the 28 dataset leaves of the final example run
+(`validation/comparisons/v07-v08-final-20260906-131441Z.json`, field
+`datasets[].metadata.*.staging_source`):
+
+| Field | Persisted by v0.8 | Derived by the compatibility layer |
+|---|---:|---:|
+| `root_mean_square_error` | 28 | 0 |
+| `dataset_scale` | 12 | 16 (`derived_default_scale`) |
+| `weighted_root_mean_square_error` | 8 | 20 (`derived_from_default_weight`) |
+
+`scale` was omitted exactly when it equalled 1, and
+`weighted_root_mean_square_error` exactly when the dataset carried no weight.
+
+### Root cause
+
+Two independent mechanisms, both in `glotaran/optimization/objective.py`:
+
+1. `OptimizationObjective.create_result_metadata` set
+   `weighted_root_mean_square_error=None` whenever the result dataset had no
+   `weighted_residual` variable. `OptimizationData.unweight_result_dataset`
+   returns early when `self.weight is None`, so that variable never exists for
+   an unweighted dataset.
+2. `OptimizationResultMetaData` declares `scale: float = 1` and
+   `weighted_root_mean_square_error: float | None = None`. The result is saved
+   through `model_dump(exclude_unset=True, exclude_defaults=True, ...)` in
+   `glotaran/builtin/io/yml/yml.py`, and the same `exclude_defaults=True` dump
+   feeds the dataset attributes in `OptimizationResult.fitted_data` and
+   `OptimizationResult.inject_meta_data_into_datasets`. Any value equal to its
+   field default was therefore dropped on the way to disk.
+
+### v0.7 reference contract
+
+`glotaran/optimization/optimization_group.py:179` in the pinned v0.7.4 tree
+writes both unconditionally, and falls back to the unweighted value:
+
+~~~python
+result_dataset.attrs["weighted_root_mean_square_error"] = (
+    np.sqrt((result_dataset.weighted_residual**2).sum() / size).data
+    if "weighted_residual" in result_dataset
+    else result_dataset.attrs["root_mean_square_error"]
+)
+
+result_dataset.attrs["dataset_scale"] = (
+    1 if dataset_model.scale is None else dataset_model.scale.value
+)
+~~~
+
+The fix restores this contract rather than inventing a new convention.
+
+### Change
+
+`temp/pyglotaran-staging-dev/pyglotaran`, commit-ready on the staging branch:
+
+- `create_result_metadata` now computes the weighted RMSE from
+  `weighted_residual` when present and from `residual` otherwise. For an
+  unweighted dataset the effective weight is one, so the weighted and
+  unweighted values coincide, exactly as in v0.7.
+- `OptimizationResultMetaData` gained a `model_serializer(mode="wrap")` that
+  re-inserts `scale` and `weighted_root_mean_square_error` after the default
+  pydantic dump, so `exclude_defaults=True` can no longer drop them.
+
+The fields stay optional for validation, so results saved by earlier v0.8 dev
+builds still load.
+
+### Size cost
+
+Two float scalars per dataset leaf. For the
+`sequential_spectral_decay` reference result the saved `result.yml` grows from
+about 1.35 kB to 1.43 kB against 3.93 MB of total saved artifacts. No array
+whose size scales with the data is persisted; the weight array itself is
+deliberately not added.
+
+### Verification
+
+- Focused core tests: `tests/optimization/test_objective.py` and
+  `tests/builtin/io/yml/test_yml.py` — 28 passed.
+- Full core suite: 455 passed, 9 xfailed.
+- Validation suite: 56 passed, 1 skipped.
+- `ruff check` and `ruff format --check` clean on both changed files.
+- End-to-end rerun of `simultaneous_analysis_3d_weight`, the scenario that
+  previously omitted both fields on `dataset1`:
+
+  | Dataset | `scale` | `weighted_root_mean_square_error` | `root_mean_square_error` |
+  |---|---:|---:|---:|
+  | dataset1 | 1.0 | 0.2537817152762107 | 0.2537817152762107 |
+  | dataset2 | 0.8800495567943826 | 0.23786547830205468 | 0.4757309566041094 |
+  | dataset3 | 72.73812042544681 | 0.20757750511045608 | 83.03100204418243 |
+
+  The corresponding v0.7.4 attributes for `dataset1` are
+  `dataset_scale=1.0` and
+  `weighted_root_mean_square_error=root_mean_square_error=0.2537816922132262`,
+  so the restored v0.8 values agree with the reference in both structure and
+  magnitude.
+
+- The fit itself is unchanged by this commit: 86 function evaluations,
+  `` `ftol` `` termination, final cost `2.5145e+03`, first-order optimality
+  `9.65e-04`, identical to the recorded staging run.
+
+### Test updated
+
+`tests/builtin/io/yml/test_yml.py::test_result_round_tripping` previously
+asserted `weighted_root_mean_square_error is None` after a round trip, which
+codified the omission. It now asserts the intended contract: the weighted RMSE
+equals the unweighted RMSE for an unweighted fit, the scale is 1, and both keys
+are present in the written `result.yml`.
+
+### Compatibility layer
+
+`validation/compatibility/load_v08.py` keeps its derivation path. It is
+defensive and simply stops firing once a result carries the fields, so old
+saved runs remain comparable while new runs report `staging_source:
+"persisted"`. Derived values remain marked as derived.
+
+### Note on NetCDF attributes
+
+`fitted_data.nc`, `residuals.nc`, `input_data.nc` and the `fit_decomposition`
+leaves are written with empty attributes, both before and after this change,
+because `inject_meta_data_into_datasets` is an after-validator that runs on
+load rather than before save. The metadata is present in `result.yml`, in the
+`elements/` and `activations/` leaves, and on every in-memory dataset after
+loading. Changing the on-disk attribute behaviour of the remaining leaves is a
+separate question and was not in scope here.

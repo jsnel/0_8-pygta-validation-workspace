@@ -1,6 +1,190 @@
 # Validation changelog
 
-## 2026-09-06 — Refined OC/COC two-dataset example
+## 2026-09-22 — Two-dataset notebook cleanup
+
+- Reduced staging's two-dataset notebook to main's nine-cell workflow, removed
+  teaching/debugging additions, and aligned dataset1/dataset2 scheme keys.
+  Preserved staging APIs, kernel metadata, model settings, and fit budget.
+- Updated the benchmark fit-cell selector. Focused execution and full paired
+  rerun passed: 11/11 notebooks per branch, 14 accepted leaves, no regressions.
+  Validation tests: 62 passed, 1 skipped.
+- Evidence and current source revisions:
+  [two-dataset investigation](issues/rates-k3d2-identifiability.md).
+
+## 2026-09-19 — ST no-single author update
+
+- Selected the September 19 no-single notebook/model and latest parameter CSV;
+  retained the author's three-evaluation budget. Both single-amplitude notebooks
+  remain deferred pending `ism200/scale_list`.
+- Generated a staging notebook/model and reporting bridge. Installed the root
+  `pygta-local-extras` package editable without dependency upgrades in both
+  environments. No core or installed extras source changes.
+- Both full ST notebooks pass with all reporting cells and eight figures each.
+  Reference matrix/CLP reconstruction agrees with staging to `1.24e-8` normalized
+  RMS; raw serialized comparison remains REVIEW_REQUIRED for the proven reference
+  residual reshape and secondary metadata differences. All 30 protected files
+  remain unchanged; 95 generated artifact hashes verified.
+- Full validation-side tests: 62 passed, one skipped. Both discovered staging
+  schemas pass. Common rerun `20260919-230004`: 11/11 notebooks per branch,
+  8 PASS and 6 EXPECTED_DIFFERENCE leaves, no regressions or baseline failures.
+- See [the evidence brief](issues/testcase-st-no-single-20260919.md)
+  for source revisions, full case-study runs, reporting dependencies, and the
+  scientific comparison. No runtime-performance claim or commits were made.
+
+## 2026-09-17 — ST single spectral-temporal case study
+
+- Added reproducible ST notebook/model translation, same-basename schema
+  discovery, and preservation of global CLP dimensions in the plotting adapter.
+- Retained NNLS at both experiment and dataset levels; native results save to
+  fresh timestamped folders. Both notebooks execute fully with four figures.
+- Isolated SciPy 1.15.3 resolves a proven SciPy 1.14.1 singular NNLS failure;
+  the ordinary staging environment, core source and lock are unchanged.
+- All four staging fits agree with reference matrix/CLP reconstruction to
+  `4.2e-16`. Raw comparison remains REVIEW_REQUIRED for the reference residual
+  reshape and secondary metadata differences; no arrays or tolerances altered.
+- Fresh common validation: 11/11 notebooks each, all 14 leaves accepted.
+  Final validation tests: 62 passed, one skipped. Revisions and artifact paths
+  are in `issues/testcase-stsingle.md`.
+
+## 2026-09-13 — Fresh full PR-readiness validation
+
+- Re-executed all 23 notebooks per branch in `validation/runs/pr-readiness-20260913-093010Z/`;
+  all pass. Common comparison: 8 PASS, 6 EXPECTED_DIFFERENCE, zero regressions.
+- Captured 40 case-study fits per branch: 32/40 within `1e-6`, 36/40 within the
+  documented 0.1% band. Retained four budget-truncated exceedances and updated
+  MCL evidence for the current, differing scientific dependency stacks.
+- Validation tests: 56 passed, 1 skipped; persistence tests: 7 passed with an
+  isolated system-temp directory; schema/load: 34 passed. Audited 3,761 files
+  without missing/hash errors and verified unchanged source state during execution.
+- Added `issues/pr-readiness-20260913.md` with revisions, artifacts and the
+  draft-PR/pre-merge distinction. No source, notebook, budget, tolerance or
+  dependency changes; no commits, staging or separate performance benchmark.
+
+## 2026-09-13 — Close three open investigations
+
+- **Weighted 3D scale drift resolved.** `simultaneous_analysis_3d_weight` is
+  optimizer termination on a flat direction, not a v0.8 defect. Both branches
+  run 86 function evaluations, terminate on `` `ftol` ``, and agree on
+  `chi_square` to `5.4e-16` relative; the cost difference is `5.4e-8` times the
+  solver's own `ftol * cost` termination threshold. `dataset3` carries weight
+  `0.0025`, so `scale.3` is the weakest-determined parameter and differs by
+  `2.5959e-5` = 0.0026%. Causes 1–4, 6 and 7 are excluded by exact input
+  comparison and by weighted-RMSE agreement to `2.9e-7`. Existing `3e-5`
+  tolerance retained; no parameters post-processed. Weighting convention stays
+  covered by `test_weight_reconstruction_and_derived_weighted_rmse`.
+- **Weighted-RMSE and default-scale persistence fixed in the staging core.**
+  Confirmed as an unintentional omission. `create_result_metadata` returned
+  `None` when no `weighted_residual` existed, and
+  `model_dump(exclude_defaults=True)` in `glotaran/builtin/io/yml/yml.py` then
+  dropped `scale == 1` as well; 16 of 28 leaves omitted the scale and 20 of 28
+  the weighted RMSE. v0.7 writes both unconditionally and falls back to the
+  unweighted RMSE, so the fix restores the reference contract. Two float
+  scalars per leaf — `result.yml` grows about 80 bytes against 3.93 MB of
+  artifacts; no array is added. Core suite 455 passed, 9 xfailed; validation
+  suite 56 passed, 1 skipped; ruff clean. `test_result_round_tripping` had
+  asserted the omission and now asserts the restored contract. Verified
+  end-to-end: `simultaneous_analysis_3d_weight` `dataset1` now persists
+  `scale=1.0` and weighted RMSE `0.2537817152762107` equal to its RMSE,
+  matching v0.7's `1.0` / `0.2537816922132262`. The fit is unchanged at 86
+  evaluations and cost `2.5145e+03`.
+- **PFID runtime reprofiled after the staging optimizations.** The Sep-1
+  profile predated `f601c1a4` and `5dd45d5f` (Sep 12). Rerunning the same
+  five-repetition protocol on `879c5bce` gives staging `180.05 s → 137.32 s`
+  (−23.7%) and a staging-to-reference ratio of **2.57x → 1.93x**, with the gain
+  concentrated in the second model's linked fit (`58.66 s → 23.24 s` and
+  `60.06 s → 23.26 s`). Peak RSS is unchanged at `5143.5 → 5130.8 MiB`, so the
+  +55% memory gap and its allocation-site attribution remain open; mean sampled
+  RSS fell 14%. Artifacts: `validation/benchmarks/memory-profile-postopt/`.
+  Caveat: the staging notebook hash differs from the Sep-1 run and the rerun
+  passed `--record-fit-calls`.
+- **Relative-magnitude assessment.** Applying a 0.1% relative acceptance band,
+  all 14 common example leaves pass (worst `2.4463e-5` = 0.0025%). Of 49
+  case-study fits with a non-zero difference, 8 exceed 0.1%; after the
+  2026-09-12 MCL refresh supersedes three, 4 unique fits remain, all
+  terminating on *maximum function evaluations* on at least one branch with
+  reference optimality of `9.0e7`, `1494`, `350` and `212`. No tolerance was
+  changed.
+- Reports updated: `issues/weighted-scale-drift.md`,
+  `issues/weighted-rmse-persistence.md`, `issues/pfid-runtime-memory-profile.md`,
+  `issues/final-validation-run.md`, `issues/README.md`, root `README.md`,
+  `validation/release-decision-report.md` and this log. No commit made.
+
+## 2026-09-13 — Restore semantic compare-results CI
+
+- Added schema-selected external comparison for v0.7 monolithic and v0.8 split
+  layouts; closed fail-open input, missing-file, empty-contract, coordinate and
+  non-finite handling. Exported standalone payload/tests to the staging validator
+  checkout. Fixed action selection and replaced floating validator use with the
+  checked-out gitlink (publication/update still required).
+- Fresh `ci-restore-20260913-000749` runs pass 11/11 notebooks on each branch.
+  Report `validation/comparisons/ci-restore-20260913-000749/main-staging-accepted.json`
+  has 8 PASS, 6 EXPECTED_DIFFERENCE, no missing artifacts or regressions.
+- Explicitly revised only spectral-guidance tolerance to 2e-6 after reproducing
+  its documented 1.2572461877946428e-6 optimizer-path drift; retained the original
+  failing report. Refreshed source revision contract; no optimizer edits.
+- Tests: 56 passed, one opt-in test skipped; standalone action tests 19 passed.
+- Prepared hashed fresh v0.7 gold-standard candidate. Historical gold is stale
+  for the maintained two-dataset leaf and guidance. No commits or publication;
+  see `issues/compare-results-ci.md` for deployment dependencies and two-path CI.
+
+## 2026-09-12 — Historical run cleanup
+
+- Removed the authorized historical case-study raw run directories from
+  `validation/runs/`, freeing approximately 14.9 GB. Retained comparison
+  reports and current canonical evidence were not removed; a fresh validation
+  run will provide replacement raw provenance.
+
+## 2026-09-09 â€” Split residual evidence by dataset role
+
+- Reviewed the paired final-allfits-20260906-132646Z reports and captured
+  notebook guide definitions at reference/staging cores 8f26be01 / f6a091eb.
+- Expanded issues/final-validation-run.md: 7 of 11 flagged fits include
+  measured-data exceedances; 4 are guide-only. Final TA measured data pass.
+  Publication guide maxima are separated from smaller measured-data maxima.
+- Documented separate measured-data, guide-construction and propagation
+  investigations without claiming a root cause or changing acceptance.
+- Verified counts and per-role maxima against existing paired reports;
+  documentation-only review, no numerical rerun or source changes.
+
+## 2026-09-06 â€” Final main-versus-staging validation
+
+- Executed all 23 selected notebooks per branch at reference core `8f26be01`
+  and optimized staging `f6a091eb`. Common results: 14/14 leaves, 8 PASS,
+  6 EXPECTED_DIFFERENCE, zero regressions or missing artifacts.
+- Retained all 40 case-study real-fit results per branch: 29 fitted-data
+  comparisons meet `1e-6`, 27 have exact inputs, and 21 satisfy both. Eleven
+  primary differences remain in the streak/TA protocols and publication cases.
+- Fixed case-study capture collisions by including the notebook stem in save
+  paths. Fixed benchmark instrumentation to execute but not time/count staging
+  dry runs. Production models, notebooks, fit budgets and core are unchanged.
+- Validation tests: 37 passed, 1 skipped; focused core tests: 35 passed.
+  Schema/load checks: 34 schemes passed. Artifact audit: 4,692 files verified.
+- Final benchmark: 12 successful workers, 150 timed samples, report-only.
+  Evaluation counts match for 14/15 fits; spectral guidance uses 23 versus 21.
+- Full evidence, exact revisions and residual issues:
+  `issues/final-validation-run.md`. Generated outputs remain ignored; no commit.
+
+## 2026-09-06 â€” Runtime optimization continuation
+
+- Replaced xarray scalar iteration with plain NumPy label extraction in staging
+  amplitude reconstruction at core `20020378` plus an uncommitted focused patch.
+  No numerical operation, dependency, production input or solver setting changed.
+- Fresh paired public-call benchmarks show PFID real-call mean reductions of
+  42% and 67%, and spectral guidance 6.4%. Two-dataset overall timing and peak
+  memory show no convincing improvement. Full distributions are retained.
+- Native original and controlled result snapshots match exactly; both controlled
+  standard workloads converge after four genuine steps. PFID has zero free
+  parameters, so nonlinear controlled steps require a prohibited problem change.
+- Fresh baseline/optimized/reference suites pass 11/11 notebooks each; staging
+  self-comparison passes all 14 leaves with zero fitted-array RMS difference.
+  Reference comparison has 8 PASS, 6 EXPECTED_DIFFERENCE and zero regressions.
+- Validation tests: 36 passed, 1 skipped; focused staging core tests: 35 passed.
+  Corrected the inherited handover's acceptance overstatement and documented
+  original budget exhaustion, an inherited Gaussian-shift defect and lock drift.
+- Evidence: `validation/runs/runtime-continuation-20260906/`; full handoff:
+  `issues/staging-runtime-optimization-continuation.md`. No commits made.
+
+## 2026-09-06 â€” Refined OC/COC two-dataset example
 
 - Replaced the historical two-dataset transient-absorption model in both
   pinned example notebooks with the supplied refined OC/COC model, including
@@ -17,7 +201,7 @@
   comparison retains `EXPECTED_DIFFERENCE` for bounded refined-model parameter
   and fit drift; the full 14-leaf validation rerun remains separate work.
 
-## 2026-09-06 — Spectral-guidance isolation
+## 2026-09-06 â€” Spectral-guidance isolation
 
 - Isolated the current-tree regression to the three newly fixed example
   parameters and resulting optimizer-path sensitivity; restoring only pinned
@@ -45,7 +229,7 @@
 - Generated fresh parity evidence at `validation/comparisons/v07-v08-20260712-175136.json`: 11/11 notebooks per branch, 14/14 leaves, 8 PASS, 6 documented EXPECTED_DIFFERENCE, and no regressions or missing artifacts.
 - Corrected the validation contract's staging orchestration revision to the checked-out source revision.
 - Generated report-only runtime evidence at `validation/benchmarks/v07-v08-runtime-20260712-175136/`: 12 workers, 150 samples, 15 matched workloads, and no warnings.
-- Added validation-side fit-runtime benchmarking for 15 optimizer invocations, with isolated warm-ups, five timed repetitions, workload metadata, and mean ± sample-standard-deviation plots.
+- Added validation-side fit-runtime benchmarking for 15 optimizer invocations, with isolated warm-ups, five timed repetitions, workload metadata, and mean Â± sample-standard-deviation plots.
 - Normalized staging fit budgets to the pinned v0.7.4 observed workloads: 21 evaluations for spectral guidance and 17 for the two-dataset example; reran the full benchmark with no workload warnings.
 - Added a manifest-driven 14-leaf scenario contract and external v0.7-compatible result comparison layer.
 - Fixed staging result coverage: DOAS saving and all four spectral-constraint leaves.
@@ -136,9 +320,29 @@
   fit comparisons meet 1e-6 (worst 2.54e-8); secondary evidence remains reviewable.
   All 26 validation tests pass. Evidence run: 20260905-200057.
 
-## 2026-09-06 — Shared notebook compatibility
+## 2026-09-12 â€” Fresh MCL comparison
+
+- Reran the corrected 77 K MCL reference and staging notebooks from fresh isolated
+  copies; both passed. The first target fit is `2.83e-8` fitted-data normalized
+  RMS at 11/11 evaluations.
+- Added scale-consistent concentration diagnostics and a separate 200-budget
+  first-fit run. Both branches reached `ftol` after 21 evaluations with matching
+  key rates. No commit made.
+
+## 2026-09-06 â€” Shared notebook compatibility
 
 - Extracted embedded case-study helpers into the installable validation/notebook_compat package; updated all 12 ignored source _v08 notebooks and future migration output to import it.
 - Added repeatable consolidation tooling, package/source provenance, documentation, and compatibility tests (31 staging tests; four applicable v0.7 tests).
 - Fresh common notebooks passed 11/11 per branch and direct conversion passed all 14 leaves. Current-tree spectral-guidance parity exceeds tolerance; see issues/notebook-compatibility-consolidation.md for exact evidence and revision drift.
 - Final consolidated case-study execution passed all 12 notebooks; verified 2,896 artifact hashes with no errors. Evidence: validation/runs/case-studies/compat-20260906-022006/compatibility-verification.json.
+- MCL native convergence captures verified separately with explicit branch Python
+  environments: 21/21 evaluations (`ftol`), fitted-data RMS `1.14330e-8`,
+  all-nine-species scale-adjusted concentration RMS at most `1.84687e-8`,
+  maximum relative rate difference `6.57453e-8`. PSI k21 reaches bound 0.03.
+- Final notebook measured data pass; remaining exceedances are guidance-only.
+  Full report: `validation/comparisons/case-studies/20260912-110000Z-mcl-refresh/mcl-refresh-summary.md`.
+  Native result/notebook artifact audit: 149 checks, zero failures. Added
+  `validation/run_mcl_convergence.py` and `validation/analyze_mcl_first_fit.py`;
+  both executed successfully. No production inputs/core edits or commit.
+
+

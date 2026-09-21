@@ -65,6 +65,29 @@ def test_conversion_preserves_fit_and_reconstructs_overlapping_weights(monkeypat
     xr.testing.assert_identical(native.optimization_results["sample"].input_data, values)
 
 
+def test_conversion_preserves_native_clp_label_dimension(monkeypatch):
+    values = xr.DataArray([[10.0]], dims=("time", "spectral"), coords={"time": [0.0], "spectral": [400.0]})
+    residual = xr.ones_like(values)
+    clp = xr.DataArray(
+        [[[1.0]]],
+        dims=("spectral", "global_clp_label", "clp_label"),
+        coords={"spectral": [400.0], "global_clp_label": ["g"], "clp_label": ["a"]},
+    )
+    native = SimpleNamespace(optimization_results={"sample": SimpleNamespace(
+        input_data=values, residuals=residual, elements={},
+        meta=SimpleNamespace(global_dimension="spectral", model_dimension="time", scale=1.0),
+        fit_decomposition=SimpleNamespace(clp=clp, matrix=clp),
+    )})
+    view = SimpleNamespace(data={"sample": values.to_dataset(name="data")})
+    monkeypatch.setattr("pyglotaran_extras.compat.convert", lambda result: view)
+    scheme = SimpleNamespace(experiments={"e": SimpleNamespace(
+        datasets={"sample": SimpleNamespace(weights=[])}
+    )})
+    converted = convert_result(native, scheme).data["sample"]
+    assert converted.clp.dims == ("spectral", "global_clp_label", "clp_label")
+    assert converted.matrix.dims == ("spectral", "global_clp_label", "clp_label")
+
+
 def test_consolidation_preserves_analysis_and_is_idempotent(tmp_path: Path):
     path = tmp_path / "example_v08.ipynb"
     nbformat.write(nbformat.v4.new_notebook(cells=[nbformat.v4.new_code_cell(

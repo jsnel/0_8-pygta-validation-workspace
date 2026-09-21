@@ -150,6 +150,9 @@ def install(branch: str, record_path: str) -> None:
 
         @functools.wraps(original)
         def timed(self: Any, *args: Any, **kwargs: Any) -> Any:
+            # Structural dry runs still execute, but are not real fit samples.
+            if kwargs.get("dry_run", False):
+                return original(self, *args, **kwargs)
             return _invoke(original, "glotaran.project.scheme.Scheme.optimize", (self, *args), kwargs)
 
         scheme_class.optimize = timed

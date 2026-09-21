@@ -40,6 +40,8 @@ def align_arrays(expected: xr.DataArray, current: xr.DataArray) -> tuple[xr.Data
     if expected.dims != current.dims:
         current = current.transpose(*expected.dims)
         transformations.append("dimension-order:current->expected")
+    if expected.shape != current.shape:
+        return expected, current, transformations
     for dimension in expected.dims:
         if dimension not in expected.coords or dimension not in current.coords:
             continue

@@ -37,10 +37,10 @@ implementation was changed.
   residual. Report: `validation/runs/compat-common-conversion-20260906-02.json`.
   The preceding probe had a test-harness Dataset/DataArray error, corrected in
   the second probe without changing the adapter.
-- Full consolidated case-study execution evidence is under
-  `validation/runs/case-studies/compat-20260906-022006`. The source sidecar records
-  package and notebook hashes; future runner manifests also hash the installed
-  compatibility module.
+- The historical full consolidated case-study raw run was removed during
+  validation-run cleanup. Its comparison and compatibility conclusions remain
+  documented here; future runner manifests also hash the installed compatibility
+  module.
 - All 12 consolidated notebooks passed, including the four live simulation calls
   in the room-temperature publication notebook and the PFID workflow. The final
   `compatibility-verification.json` checks 2,896 artifact hashes with zero missing
@@ -49,9 +49,9 @@ implementation was changed.
 - Real v0.8 simulation using a fresh fluorescence result's converted CLP and
   seeded noise agreed exactly with direct native simulation:
   `validation/runs/compat-simulation-20260906.txt`.
-- The initial case-study run `compat-20260906-015928` was deliberately interrupted
-  during the TA protocol after four notebooks had passed, to restart with one
-  numerical thread. Completed evidence and an interruption record are retained.
+- The initial case-study run `compat-20260906-015928` was deliberately
+  interrupted during the TA protocol after four notebooks had passed, to restart
+  with one numerical thread. Its raw artifacts were removed during cleanup.
 
 ## Current-tree parity caveat
 

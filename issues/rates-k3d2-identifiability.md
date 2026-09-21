@@ -8,6 +8,38 @@ model. Both pinned example notebooks now use the refined target model with
 coherent-artifact elements and explicit CLP relations. No pyglotaran core or
 serialization fix was required.
 
+## 2026-09-22 notebook alignment
+
+The staging two-dataset notebook now follows main's nine-cell workflow and
+uses `dataset1`/`dataset2` throughout, including the staging scheme keys.
+Earlier references below to `oc_tol_data`/`coc_tol_data` are historical.
+Staging retains scheme loading/optimization, native saving, and extras plotting
+conversion. Exercises, dry-run diagnostics, file/parameter displays, extra
+plots, and rate inspection were removed. Numerical model settings, parameters,
+the 11-evaluation budget, and existing local kernel metadata are preserved.
+
+Focused execution passed at
+`validation/runs/two-dataset-cleanup-focused-20260922-001548/`.
+Fresh full runs at `validation/runs/{main,staging}/two-dataset-cleanup-20260921-221632/`
+passed 11/11 notebooks each. The comparison at
+`validation/comparisons/two-dataset-cleanup-20260921-221632.json` accepts all
+14 leaves (8 PASS, 6 EXPECTED_DIFFERENCE), with no missing artifacts or
+regressions. This scenario's worst fitted-data normalized RMS remains
+`8.81932458660469e-6`, below `2e-5`; documented secondary differences remain.
+Both manifests and source, lockfile, and result-tree hashes were verified.
+
+Actual core revisions: main `e6ba6316f6bc7365211a841fc417c4a98f65860f`,
+staging `c71ebad0552c9fa8d0bfdc9a2d8f45e41a696f4a`.
+Examples revisions: main `4a3268efbab28c190ab8348faedf51fe1b04faa2`,
+staging `44e3747cf39f0482ed5c05578624577938159085` plus this working-tree edit.
+These are current-tree results; revisions differ from the pinned contract.
+
+Validation tests: 62 passed, 1 skipped after updating the benchmark's staging
+fit-cell selector from `3` to `4`. The first run caught that stale selector
+(61 passed, 1 failed, 1 skipped). No fit-runtime benchmark was run: the public
+fit workload and budget are unchanged, and removed diagnostics are outside
+its timing scope. No core edits or commits.
+
 ## Question
 
 Is the rates.k3d2 discrepancy in the two-dataset transient-absorption scenario

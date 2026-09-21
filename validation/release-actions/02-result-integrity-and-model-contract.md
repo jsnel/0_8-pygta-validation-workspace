@@ -47,7 +47,19 @@ The migration converter already excludes the artifact/oscillation entries it add
 
 This need not block the already corrected migrated workflows. It becomes a release concern if v0.8 promises safe native authoring of these models without documenting the required exclusions. A redesign of the activation namespace can wait.
 
-## C. Some diagnostics are derived rather than saved
+## C. Some diagnostics are derived rather than saved — resolved 2026-09-13
+
+**Outcome:** the answer to the question below is that the diagnostics were
+genuinely lost, and the loss is now repaired in the staging core. The omission
+was a side effect of saving results with "skip anything still at its ordinary
+value": a dataset scale of exactly 1 and a weighted error on an unweighted
+dataset both looked like ordinary values and were dropped. A user reloading such
+a result could not recover either number without refitting. Both are now written
+for every dataset, as v0.7 does, at a cost of two numbers per dataset — no
+arrays and no return to the v0.7 file layout. Verified against v0.7 on the
+weighted 3D example and covered by the updated round-trip test. Details in the
+[persistence brief](../../issues/weighted-rmse-persistence.md). The original
+question is retained below for context.
 
 v0.7 often saves a dataset scale of 1 and weighted RMSE explicitly. Some v0.8 results omit these defaults. Our comparison adapter supplies the default scale and calculates weighted RMSE from residuals and weights, recording that it derived them.
 

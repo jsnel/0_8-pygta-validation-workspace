@@ -1,5 +1,21 @@
 version: 1
 repositories:
+  - slug: testcaseSTsingle
+    url: null
+    rationale: >-
+      User-selected spectral-temporal target analysis without single-amplitude
+      scaling, with six kinetic components and shifted spectral data. The
+      September 19 no-single notebook is the active paired reference/staging
+      entry point. The two single-amplitude notebooks are recorded below but
+      deferred until the ism200 scale_list feature is available on the selected
+      pyglotaran branch.
+    notebooks:
+      - 20260919STno_single_State1_2_6comp_per_day2Olli_shifted.ipynb
+    deferred_notebooks:
+      - path: 20260915STsingle_State1_2_6comp_per_day2Olli_shifted.ipynb
+        reason: requires the ism200 scale_list single-amplitude feature; defer until that branch is selected.
+      - path: 20260919STsingle_State1_2_6comp_per_day2Olli_shifted.ipynb
+        reason: requires the ism200 scale_list single-amplitude feature; defer until that branch is selected.
   - slug: TestCaseInitConc
     url: null
     rationale: >-

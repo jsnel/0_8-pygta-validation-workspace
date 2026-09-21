@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pygta-local-extras"
+version = "0.1.0"
+description = "Local helper utilities for the pygta workspace."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+	"numpy",
+	"pandas",
+	"xarray",
+]
+
+[tool.setuptools]
+packages = [
+	"pygta_local_extras",
+	"pygta_local_extras.analysis",
+	"pygta_local_extras.io",
+	"pygta_local_extras.selection",
+]
+
+[tool.setuptools.package-dir]
+pygta_local_extras = "src"
+"pygta_local_extras.analysis" = "src/analysis"
+"pygta_local_extras.io" = "src/io"
+"pygta_local_extras.selection" = "src/selection"
+
+[dependency-groups]
+dev = [
+	"pre-commit>=4.3.0",
+    "pytest>=9.0.3",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

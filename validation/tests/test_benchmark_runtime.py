@@ -82,6 +82,8 @@ def test_staging_public_fit_hook_patches_scheme_method(
 
     class Scheme:
         def optimize(self, *args: object, **kwargs: object) -> object:
+            if kwargs.get("dry_run"):
+                return "dry run executed"
             return {"number_of_function_evaluations": kwargs.get("maximum_number_function_evaluations", 2)}
 
     scheme_module.Scheme = Scheme  # type: ignore[attr-defined]
@@ -91,8 +93,12 @@ def test_staging_public_fit_hook_patches_scheme_method(
     benchmark_hooks._STATE = None
     record_path = tmp_path / "calls.json"
     benchmark_hooks.install("staging", str(record_path))
+    assert Scheme().optimize(dry_run=True) == "dry run executed"
+    assert not record_path.exists()
     Scheme().optimize(maximum_number_function_evaluations=4)
     records = json.loads(record_path.read_text(encoding="utf-8"))
+    assert len(records) == 1
+    assert records[0]["invocation"] == 1
     assert records[0]["entrypoint"] == "glotaran.project.scheme.Scheme.optimize"
     assert records[0]["workload"]["number_of_function_evaluations"] == 4
     benchmark_hooks._STATE = None

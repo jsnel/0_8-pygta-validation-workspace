@@ -17,11 +17,16 @@ investigations and the procedure for accepting future changes.
 
 ## Current acceptance state
 
+The [final current-tree run](issues/final-validation-run.md) confirms the common
+14-leaf acceptance state and executes all 12 external case-study notebooks per
+branch. Eleven of 40 case-study fits still exceed their primary tolerance;
+their scientific acceptance remains separate from common-example acceptance.
+
 The latest clean validation has 11/11 notebooks passing on each branch. The
 semantic comparison has 8 `PASS` and 6 documented `EXPECTED_DIFFERENCE` leaves,
-with no missing artifacts or regressions. The normalized runtime benchmark has
-matching function-evaluation counts across all 15 fit calls and remains
-report-only.
+with no missing artifacts or regressions. The final runtime benchmark has
+matching function-evaluation counts for 14/15 fit calls; spectral guidance uses
+23 reference versus 21 staging evaluations. Runtime remains report-only.
 
 Authoritative inputs and tolerances are in
 [`validation/scenarios.yml`](validation/scenarios.yml). Rerun procedures are in

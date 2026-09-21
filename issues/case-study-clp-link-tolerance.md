@@ -21,9 +21,8 @@ fixed color cycler assigned colors to different labels.
   emits the value on every migrated experiment.
 - The external compatibility projection restores initial-concentration species
   order and removes duplicate suffixed kinetic compatibility variables.
-- Final paired run: `validation/runs/case-studies/20260830-182522/` (3/3
-  notebooks passed on both branches).
-- Final comparison:
+- The historical paired raw run was removed during validation-run cleanup;
+  the retained final comparison is:
   `validation/comparisons/case-studies/20260830-182522/pub-2025-01-van-stokkum-et-al/comparison.json`.
 - Whole-cell result: identical cost `512450.708544407`, identical 1,886 CLPs,
   1/1 function evaluations, and worst fitted-data normalized RMS

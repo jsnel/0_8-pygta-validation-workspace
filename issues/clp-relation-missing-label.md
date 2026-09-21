@@ -21,8 +21,8 @@ axis before applying a relation. The publication case study
   labels is skipped while the estimated CLP remains unchanged.
 - Focused core test result: `2 passed`.
 - The previously failing 22-dataset dry run and real fit subsequently pass.
-- Definitive case-study evidence is under
-  `validation/runs/case-studies/20260830-182522/` and its semantic report under
+- The historical raw case-study run was removed during validation-run cleanup;
+  its retained semantic report is under
   `validation/comparisons/case-studies/20260830-182522/`.
 
 The staging core change is intentionally uncommitted pending review. It is a

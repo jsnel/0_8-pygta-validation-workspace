@@ -62,6 +62,35 @@ def test_notebook_pairs_resolves_variable_model_and_parameter_paths(tmp_path: Pa
     }
 
 
+def test_notebook_pairs_discovers_same_name_notebook_and_scheme_alias(
+    tmp_path: Path,
+) -> None:
+    notebook_path = tmp_path / "analysis.ipynb"
+    notebook = nbformat.v4.new_notebook(
+        cells=[
+            nbformat.v4.new_code_cell(
+                "\n".join(
+                    [
+                        "model = load_scheme('models/example_v08.yml')",
+                        "parameters = load_parameters('models/example.csv')",
+                        "scheme = model",
+                        "scheme_parameters = parameters",
+                    ]
+                )
+            )
+        ]
+    )
+    nbformat.write(notebook, notebook_path)
+
+    pairs = notebook_pairs(tmp_path)
+
+    assert pairs == {
+        (tmp_path / "models/example_v08.yml").resolve(): (
+            tmp_path / "models/example.csv"
+        ).resolve()
+    }
+
+
 def test_convert_model_translates_legacy_coherent_artifact_constraint_label(
     tmp_path: Path,
 ) -> None:
@@ -350,6 +379,18 @@ def test_notebook_clp_link_tolerance_is_associated_with_model(tmp_path: Path) ->
     tolerances = notebook_clp_link_tolerances([notebook_path], {model_path: {}})
 
     assert tolerances == {model_path.resolve(): 2.1}
+
+
+def test_fit_captures_do_not_overwrite_between_notebooks() -> None:
+    paths = []
+    for name in ("step_1", "step_2"):
+        notebook = nbformat.v4.new_notebook(cells=[
+            nbformat.v4.new_code_cell("result = optimize(scheme)")
+        ])
+        captures = instrument_fit_results(notebook, namespace=name)
+        paths.append(captures[0]["result_path"])
+        assert captures[0]["result_path"] in notebook.cells[1].source
+    assert len(set(paths)) == 2
 
 
 def test_instrument_fit_results_skips_dry_runs() -> None:
