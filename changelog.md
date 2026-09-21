@@ -1,5 +1,16 @@
 # Validation changelog
 
+## 2026-09-22 — Two-dataset notebook cleanup
+
+- Reduced staging's two-dataset notebook to main's nine-cell workflow, removed
+  teaching/debugging additions, and aligned dataset1/dataset2 scheme keys.
+  Preserved staging APIs, kernel metadata, model settings, and fit budget.
+- Updated the benchmark fit-cell selector. Focused execution and full paired
+  rerun passed: 11/11 notebooks per branch, 14 accepted leaves, no regressions.
+  Validation tests: 62 passed, 1 skipped.
+- Evidence and current source revisions:
+  [two-dataset investigation](issues/rates-k3d2-identifiability.md).
+
 ## 2026-09-19 — ST no-single author update
 
 - Selected the September 19 no-single notebook/model and latest parameter CSV;

@@ -1,5 +1,18 @@
 # Validation log
 
+## 2026-09-22 — Two-dataset notebook cleanup
+
+- Aligned staging with main's nine-cell workflow and dataset1/dataset2 names;
+  retained staging APIs, numerical settings, and the 11-evaluation budget.
+- Focused execution passed. Full paired rerun `two-dataset-cleanup-20260921-221632`
+  passed 11/11 notebooks per branch and accepted all 14 leaves (8 PASS,
+  6 EXPECTED_DIFFERENCE), with no regressions or missing artifacts.
+- Report: `validation/comparisons/two-dataset-cleanup-20260921-221632.json`.
+  Source, lockfile, and result hashes verified against both runner manifests.
+- Updated the benchmark fit-cell selector; tests: 62 passed, 1 skipped.
+- Source revisions and remaining differences are recorded in
+  `issues/rates-k3d2-identifiability.md`. No core edits or commits.
+
 ## 2026-09-19 — ST no-single validation
 
 - Selected the September 19 no-single notebook/model and latest parameter CSV;

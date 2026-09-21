@@ -40,7 +40,7 @@ cases:
     scenario: study_transient_absorption/two_dataset_analysis
     notebook: study_transient_absorption/transient_absorption_two_dataset_analysis.ipynb
     main: {cell_id: "4", invocation: 1}
-    staging: {cell_id: "3", invocation: 1}
+    staging: {cell_id: "4", invocation: 1}
 
   - id: ex_spectral_constraints/no_penalties_first_run
     scenario: ex_spectral_constraints/no_penalties_first_run
