@@ -8,6 +8,8 @@ v0.7 has a documented residual reshape defect. Raw fitted data is retained too.
 from __future__ import annotations
 
 import argparse
+import hashlib
+import importlib.metadata
 import json
 import subprocess
 from pathlib import Path
@@ -112,7 +114,10 @@ def run(branch: str, output: Path) -> None:
                                "rates": [result.optimized_parameters.get(k).value for k in ["k1", "k2"]]}
     source_root = Path(glotaran.__file__).resolve().parent.parent
     summaries["source"] = {"package": str(glotaran.__file__), "version": glotaran.__version__,
-        "revision": subprocess.check_output(["git", "-C", str(source_root), "rev-parse", "HEAD"], text=True).strip()}
+        "revision": subprocess.check_output(["git", "-C", str(source_root), "rev-parse", "HEAD"], text=True).strip(),
+        "status": subprocess.check_output(["git", "-C", str(source_root), "status", "--porcelain"], text=True).strip(),
+        "harness_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+        "dependencies": {name: importlib.metadata.version(name) for name in ["numpy", "scipy", "xarray"]}}
     np.savez(output / "arrays.npz", **arrays)
     (output / "summary.json").write_text(json.dumps(summaries, indent=2), encoding="utf-8")
     print(json.dumps(summaries, indent=2))

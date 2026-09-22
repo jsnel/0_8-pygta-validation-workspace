@@ -42,3 +42,23 @@ def test_pairing_without_global_model_is_rejected():
     original["dataset"]["data"].pop("global_megacomplex")
     with pytest.raises(ValueError, match="requires global megacomplexes"):
         convert_model(original, Path("source.yml"))
+
+
+@pytest.mark.parametrize("irf_type", ["multi-multi-gaussian", "conv-multi-multi-gaussian", "norm-conv-multi-multi-gaussian"])
+def test_grouped_irf_translation_preserves_nested_parameter_references(irf_type: str):
+    from glotaran.project.scheme import Scheme
+
+    original = source_model()
+    original["dataset"]["data"].update(initial_concentration="initial", irf="irf")
+    original["initial_concentration"] = {"initial": {"compartments": ["s1"], "parameters": [1]}}
+    irf = {"type": irf_type, "center": [["center", "offset"]], "width": [["width", "width"]],
+           "scale": [[1, "relative_scale"]], "normalize_area": True, "normarea": 1000}
+    if irf_type != "multi-multi-gaussian":
+        irf["convwidth"] = ["broadening.a", "broadening.b"]
+    original["irf"] = {"irf": irf}
+    converted, _ = convert_model(original, Path("source.yml"))
+    activation = converted["experiments"]["default"]["datasets"]["data"]["activations"]["irf"]
+    assert activation["center"] == [["center", "offset"]]
+    assert activation["scale"] == [[1, "relative_scale"]]
+    assert activation["normarea"] == 1000
+    assert Scheme.from_dict(converted).experiments["default"].datasets["data"].activations["irf"].type == irf_type

@@ -232,3 +232,7 @@ validation/benchmarks/*.csv
 validation/benchmarks/*.json
 validation/benchmarks/*.png
 validation/benchmarks/*.svg
+
+# Local source audit worktree and exploratory pytest artifacts.
+temp/scale-list-reference/
+.pytest-tmp*/

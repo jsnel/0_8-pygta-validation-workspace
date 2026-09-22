@@ -71,6 +71,16 @@ IRF_KEYS = {
     "width_dispersion_coefficients",
     "model_dispersion_with_wavenumber",
     "force_index_dependent",
+    'normalize_area',
+    'normarea',
+    'convwidth',
+    'width_dispersion_spline_knots',
+    'width_dispersion_spline_knots_in_wavelength',
+    'width_dispersion_spline_values',
+    'width_dispersion_skewed_gaussian_amplitude',
+    'width_dispersion_skewed_gaussian_location',
+    'width_dispersion_skewed_gaussian_width',
+    'width_dispersion_skewed_gaussian_skewness',
 }
 FIT_CONTROL_NAMES = {
     "maximum_number_function_evaluations",
@@ -245,6 +255,8 @@ def activation(
         activation_type = "gaussian"
     elif legacy_type in {"spectral-multi-gaussian", "multi-gaussian"}:
         activation_type = "multi-gaussian"
+    elif legacy_type in {"multi-multi-gaussian", "conv-multi-multi-gaussian", "norm-conv-multi-multi-gaussian"}:
+        activation_type = legacy_type
     else:
         raise ValueError(f"Unsupported IRF type {legacy_type!r}")
     result = {
@@ -260,6 +272,16 @@ def activation(
         "dispersion_center",
         "center_dispersion_coefficients",
         "width_dispersion_coefficients",
+        'normalize_area',
+        'normarea',
+        'convwidth',
+        'width_dispersion_spline_knots',
+        'width_dispersion_spline_knots_in_wavelength',
+        'width_dispersion_spline_values',
+        'width_dispersion_skewed_gaussian_amplitude',
+        'width_dispersion_skewed_gaussian_location',
+        'width_dispersion_skewed_gaussian_width',
+        'width_dispersion_skewed_gaussian_skewness',
     ):
         if key in legacy_irf:
             result[key] = legacy_irf[key]
