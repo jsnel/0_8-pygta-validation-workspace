@@ -28,12 +28,17 @@ MODEL_TOP_LEVEL_KEYS = {
     "clp_constraints",
     "clp_penalties",
     "clp_area_penalties",
+    "parameter_penalties",
     "shape",
 }
 DATASET_KEYS = {
     "group",
     "megacomplex",
     "megacomplex_scale",
+    "global_megacomplex",
+    "global_megacomplex_scale",
+    "single_amplitude_model",
+    "scale_list",
     "initial_concentration",
     "irf",
     "scale",
@@ -74,6 +79,9 @@ FIT_CONTROL_NAMES = {
     "xtol",
     "optimization_method",
     "add_svd",
+    "x_scale",
+    "compute_clp_standard_error",
+    "clp_standard_error_finite_difference_relative_step",
 }
 OLD_MODEL_ACCESS = re.compile(r"(?P<scheme>\w+)\.model\.k_matrix\[['\"](?P<km>[^'\"]+)")
 OLD_INITIAL_ACCESS = re.compile(r"initial_concentration\[['\"](?P<initial>[^'\"]+)")
@@ -382,6 +390,21 @@ def convert_model(
             if len(element_labels) != len(scales):
                 raise ValueError(f"Element scale count differs in dataset {dataset_label}")
             migrated_dataset["element_scale"] = dict(zip(element_labels, scales, strict=True))
+        global_elements = list(item.get("global_megacomplex") or [])
+        if global_elements:
+            migrated_dataset["global_elements"] = global_elements
+            migrated_dataset["residual_function"] = group.get("residual_function", "variable_projection")
+            global_scales = item.get("global_megacomplex_scale")
+            if global_scales is not None:
+                if len(global_elements) != len(global_scales):
+                    raise ValueError(f"Global element scale count differs in dataset {dataset_label}")
+                migrated_dataset["global_element_scale"] = dict(zip(global_elements, global_scales, strict=True))
+        if item.get("single_amplitude_model"):
+            if not global_elements:
+                raise ValueError(f"Single-amplitude dataset {dataset_label} requires global megacomplexes")
+            migrated_dataset["global_composition"] = "paired"
+        if "scale_list" in item:
+            migrated_dataset["scale_list"] = copy.deepcopy(item["scale_list"])
         migrated_activation = activation(item, document, megacomplexes)
         if migrated_activation is not None:
             migrated_dataset["activations"] = {"irf": migrated_activation}
@@ -472,7 +495,10 @@ def convert_model(
                 {"kind": new_key, "source": source_label, "target": target_label, "experiments": owners}
             )
 
-    return {"library": library, "experiments": experiments}, log
+    converted = {"library": library, "experiments": experiments}
+    if document.get("parameter_penalties"):
+        converted["parameter_penalties"] = copy.deepcopy(document["parameter_penalties"])
+    return converted, log
 
 
 def schema_documents(root: Path) -> dict[Path, dict[str, Any]]:
