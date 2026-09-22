@@ -8,6 +8,9 @@ The native port is on core branch `codex/port-scale-list` in
 `d38d973bc48501e9ba0a23e893acc8cb5293e1d8`. Later documentation-only commits
 retain that implementation. The staging orchestration has a branch of the same
 name; workspace evidence is on `codex/port-scale-list-validation`.
+Final core delivery: `c209d67bb3f0b0a1e2c5947097db85c0a6f6ab74` (11 commits after
+upstream staging). Final staging orchestration:
+`02eb7bf4ae3f370048d8c869b61d550b518fdff7`.
 
 Requested source: `ism200/pyglotaran` scale_list at
 `84d838991e1d0280954350796037763d4bd612aa`. Current upstream main/reference core:
@@ -102,7 +105,32 @@ Exploratory failures and earlier runs are retained, not reused as final evidence
 ## Runtime measurement
 
 The standard one-thread, one-warm-up/five-repetition alternating-branch benchmark
-is running. Final report metadata and workload qualifications will be added here.
+completed: **12 passed workers, 150 timed samples, 15 fit summaries, REPORT_ONLY**.
+Source and lockfile hashes are consistent across all workers of each branch.
+Only public optimizer calls were timed; setup, plotting, saving and comparison
+were excluded.
+
+- Raw: `validation/benchmarks/raw/v07-v08-scale-list-20260922-024526/`
+- Report: `validation/benchmarks/v07-v08-scale-list-20260922-024526/runtime.json`
+  (CSV, PNG and SVG companions are in the same directory.)
+- Benchmark manifest SHA-256:
+  `0fa26a041487bf135cd07f0e9cca11ffb02bc8fc5820854b6df838179e23fca2`.
+
+Evaluation counts match for **14/15** fits. Spectral guidance is **23 main / 20
+staging**, so its 1.144 runtime ratio is not an implementation-performance
+comparison. Matching-workload staging/main mean ratios span **0.723–2.840**;
+examples include spectral constraints with penalties (0.723), transient target
+analysis (0.755), fluorescence target analysis (1.806), and the two-dataset
+example (2.840). These include differences in installed scientific dependencies
+and pre-existing architectures; they do not isolate the cost of this port.
+The timings are report-only and do not alter numerical acceptance.
+
+After timing, Ruff normalized one mixed LF/CRLF line in the checkout. Canonical
+content is identical to the committed file. The audit is retained at
+`validation/runs/scale-list-port-20260922-015900/checkout-newline-normalization.json`.
+The recorded raw staging source hash above is the tested snapshot; the normalized
+checkout hash is `5e6a565e84ad1617feba8ea21dffd7801eef99474b59a793e34802428a72d0bc`.
+There was no committed runtime-code change after the tested checkpoint.
 
 ## Remaining scientific qualifications
 

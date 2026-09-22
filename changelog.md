@@ -14,6 +14,10 @@
   Fresh common rerun: 11/11 notebooks per branch, 14 accepted leaves (8 PASS,
   6 EXPECTED_DIFFERENCE), zero regressions or missing artifacts. Source, lockfile,
   examples and result hashes verified. Existing tolerances remain unchanged.
+- Standard runtime benchmark completed: 12 passed workers, 150 timed samples,
+  15 fit summaries, REPORT_ONLY. Workloads match for 14/15 fits; spectral guidance
+  uses 23 main versus 20 staging evaluations. Matching-workload timing ratios
+  span 0.723–2.840 across the different installed scientific stacks.
 - Detailed revisions, generated report locations, runtime handoff and limitations:
   `issues/scale-list-staging-port.md`. Generated evidence is retained and ignored.
   No author notebook/data changes, dependency upgrades, push or merge.
