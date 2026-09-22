@@ -1,5 +1,23 @@
 # Validation log
 
+## 2026-09-22 — Native scale_list port
+
+- Documented the exact `ism200/scale_list` endpoint delta versus current main;
+  committed a staging-native plan before implementation, then checkpointed IO,
+  parameters, penalties, scaling/paired models, IRFs and CLP uncertainty separately.
+- Core branch: `codex/port-scale-list`, based on `afce5d50`; tested runtime
+  revision: `d38d973b`. Workspace branch: `codex/port-scale-list-validation`.
+- Added external grouped-IRF/scaling/fit-control translation and independent
+  analytic source-versus-port evidence: scale-list fits match exactly, paired
+  fitted-data normalized RMS is 3.326e-16, and workloads/CLP counts agree.
+- Complete core tests: 534 passed, 9 xfailed; validation tests: 67 passed, 1 skipped.
+  Fresh common rerun: 11/11 notebooks per branch, 14 accepted leaves (8 PASS,
+  6 EXPECTED_DIFFERENCE), zero regressions or missing artifacts. Source, lockfile,
+  examples and result hashes verified. Existing tolerances remain unchanged.
+- Detailed revisions, generated report locations, runtime handoff and limitations:
+  `issues/scale-list-staging-port.md`. Generated evidence is retained and ignored.
+  No author notebook/data changes, dependency upgrades, push or merge.
+
 ## 2026-09-22 — Two-dataset notebook cleanup
 
 - Aligned staging with main's nine-cell workflow and dataset1/dataset2 names;

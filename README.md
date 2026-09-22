@@ -8,10 +8,19 @@ installations are independent.
 
 ## Current baseline
 
+The [September 22 scale_list port](issues/scale-list-staging-port.md) is implemented
+on a separate `codex/port-scale-list` core branch from current staging. Its committed
+plan, endpoint delta and native API guide are under core `devdocs/scale-list-port/`.
+The full core suite passes 534 tests (9 expected failures); fresh common validation
+passes 11/11 notebooks per branch and accepts all 14 leaves. New-feature synthetic
+fits match the exact source endpoint to machine precision. The runtime handoff is
+recorded in the issue brief. These are local branches, not a merge into staging.
+
 The active ST case is now the author's [September 19 no-single notebook](issues/testcase-st-no-single-20260919.md),
 with its three-evaluation budget preserved. Its staging port uses the dedicated
 SciPy 1.15.3 environment and the workspace-root `pygta-local-extras` package.
-The single-amplitude notebooks remain deferred pending `ism200/scale_list`.
+The author single-amplitude notebooks remain outside the accepted case-study suite;
+the separate scale_list port has dedicated synthetic and core test coverage.
 The September 19 common rerun accepts all 14 leaves; the
 [September 17 ST evidence](issues/testcase-stsingle.md) describes older inputs.
 
