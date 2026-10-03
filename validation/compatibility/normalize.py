@@ -65,6 +65,12 @@ def first_data_array(dataset: xr.Dataset, preferred: str | None = None) -> xr.Da
 
 
 def scalar_metadata(value: Any) -> Any:
-    """Convert numpy scalar values to JSON-friendly Python values."""
+    """Convert numpy values to JSON-friendly Python values.
 
-    return value.item() if hasattr(value, "item") else value
+    Arrays with more or fewer than one element (for example the empty
+    ``dataset_scale_list`` attribute written by the scale_list reference) become lists.
+    """
+
+    if not hasattr(value, "item"):
+        return value
+    return value.item() if np.size(value) == 1 else np.asarray(value).tolist()

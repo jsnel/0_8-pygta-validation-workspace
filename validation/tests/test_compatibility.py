@@ -176,3 +176,14 @@ def test_staging_translation_and_save_regressions_are_present() -> None:
     )
     two_dataset_sources = [line for cell in two_datasets["cells"] for line in cell.get("source", [])]
     assert "    parameters, datasets=experiment_data, maximum_number_function_evaluations=17\n" in two_dataset_sources
+
+
+def test_scalar_metadata_keeps_non_scalar_attributes_as_lists():
+    from validation.compatibility.normalize import scalar_metadata
+
+    assert scalar_metadata(np.float64(2.5)) == 2.5
+    assert scalar_metadata(np.array([3])) == 3
+    # The scale_list reference writes an empty dataset_scale_list attribute.
+    assert scalar_metadata(np.array([])) == []
+    assert scalar_metadata(np.array([1.0, 2.0])) == [1.0, 2.0]
+    assert scalar_metadata("spectral") == "spectral"

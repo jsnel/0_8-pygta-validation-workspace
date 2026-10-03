@@ -62,3 +62,60 @@ def test_grouped_irf_translation_preserves_nested_parameter_references(irf_type:
     assert activation["scale"] == [[1, "relative_scale"]]
     assert activation["normarea"] == 1000
     assert Scheme.from_dict(converted).experiments["default"].datasets["data"].activations["irf"].type == irf_type
+
+
+def guide_source_model():
+    return {
+        "dataset_groups": {
+            "linked": {"residual_function": "non_negative_least_squares", "link_clp": True},
+            "unused": {"link_clp": True},
+        },
+        "megacomplex": {
+            "kinetic": {"type": "decay", "k_matrix": ["rates"]},
+            "guide": {"type": "spectral-model-clp-guide", "target": "s1",
+                      "shape": {"s1": "guide_shape"}},
+        },
+        "k_matrix": {"rates": {"matrix": {"(s1, s1)": "k"}}},
+        "shape": {"guide_shape": {
+            "type": "skewed-gaussian-sum", "amplitude": ["a.1", "a.2"],
+            "location": ["l.1", "l.2"], "width": ["w.1", "w.2"], "skewness": ["s.1", "s.2"],
+        }},
+        "dataset": {
+            "data": {"group": "linked", "megacomplex": ["kinetic"],
+                     "initial_concentration": "input", "irf": "irf"},
+            "guide_data": {"group": "linked", "megacomplex": ["guide"],
+                           "spectral_axis_inverted": True, "spectral_axis_scale": 1e7,
+                           "scale": "scale.guide"},
+        },
+        "initial_concentration": {"input": {"compartments": ["s1"], "parameters": ["i.1"]}},
+        "irf": {"irf": {"type": "gaussian", "center": "irf.c", "width": "irf.w"}},
+        "weights": [{"datasets": ["guide_data"], "value": 5e3}],
+    }
+
+
+def test_spectral_model_clp_guide_translation_inlines_target_shape():
+    from glotaran.project.scheme import Scheme
+
+    original = guide_source_model()
+    converted, log = convert_model(original, Path("source.yml"), clp_link_tolerance=0.0)
+    assert converted["library"]["guide"] == {
+        "type": "spectral-model-clp-guide",
+        "target": "s1",
+        "shapes": {"s1": original["shape"]["guide_shape"]},
+    }
+    experiment = converted["experiments"]["linked"]
+    assert experiment["scale"] == {"guide_data": "scale.guide"}
+    assert experiment["datasets"]["guide_data"]["weights"] == [{"value": 5e3}]
+    assert experiment["datasets"]["guide_data"]["spectral_axis_scale"] == 1e7
+    # v0.7 ignores dataset groups without datasets; staging cannot optimize them.
+    assert set(converted["experiments"]) == {"linked"}
+    assert log["empty_dataset_groups"] == ["unused"]
+    guide = Scheme.from_dict(converted).experiments["linked"].datasets["guide_data"]
+    assert guide.spectral_axis_inverted is True
+
+
+def test_spectral_model_clp_guide_without_target_shape_is_rejected():
+    original = guide_source_model()
+    original["megacomplex"]["guide"]["target"] = "s2"
+    with pytest.raises(ValueError, match="has no shape for s2"):
+        convert_model(original, Path("source.yml"))

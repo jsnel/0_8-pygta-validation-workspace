@@ -193,6 +193,21 @@ def element_from_megacomplex(
         if "dimension" in item:
             result["dimension"] = item["dimension"]
         return result, {str(item["target"])}
+    if element_type == "spectral-model-clp-guide":
+        shape_references = item.get("shape") or {}
+        target = str(item["target"])
+        if target not in shape_references:
+            raise ValueError(f"Spectral model CLP guide {label} has no shape for {target}")
+        result = {
+            "type": "spectral-model-clp-guide",
+            "target": target,
+            "shapes": {
+                target: copy.deepcopy(document["shape"][shape_references[target]])
+            },
+        }
+        if "dimension" in item:
+            result["dimension"] = item["dimension"]
+        return result, {target}
     if element_type == "spectral":
         shapes = {
             shape_label: copy.deepcopy(document["shape"][shape_reference])
@@ -517,6 +532,13 @@ def convert_model(
                 {"kind": new_key, "source": source_label, "target": target_label, "experiments": owners}
             )
 
+    # v0.7 ignores dataset groups without datasets; a v0.8 experiment needs a dataset.
+    log["empty_dataset_groups"] = [
+        label for label, experiment in experiments.items() if not experiment["datasets"]
+    ]
+    experiments = {
+        label: experiment for label, experiment in experiments.items() if experiment["datasets"]
+    }
     converted = {"library": library, "experiments": experiments}
     if document.get("parameter_penalties"):
         converted["parameter_penalties"] = copy.deepcopy(document["parameter_penalties"])
