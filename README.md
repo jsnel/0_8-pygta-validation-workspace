@@ -16,6 +16,11 @@ passes 11/11 notebooks per branch and accepts all 14 leaves. New-feature synthet
 fits match the exact source endpoint to machine precision. The runtime handoff is
 recorded in the issue brief. These are local branches, not a merge into staging.
 
+The [October 3 spectral model CLP guide port](issues/spectral-model-guide-port.md) adds the
+three remaining source commits to staging `feature/scale_list` and ports the author's
+`testcase_spectral_model_guide` notebook. Core: 548 passed, 9 xfailed; the common rerun
+accepts all 14 leaves with unchanged metrics.
+
 The active ST case is now the author's [September 19 no-single notebook](issues/testcase-st-no-single-20260919.md),
 with its three-evaluation budget preserved. Its staging port uses the dedicated
 SciPy 1.15.3 environment and the workspace-root `pygta-local-extras` package.

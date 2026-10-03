@@ -1,5 +1,26 @@
 # Validation changelog
 
+## 2026-10-03 — Spectral model CLP guide port
+
+- Ported the remaining source commits `2ce22078`, `2012541b`, `f93c60d4`
+  (`jsnel/scale_list_rebased`) to staging `feature/scale_list` in seven commits
+  (`7234202a`..`5aaa46c9`; tested runtime `27d06da9`): `skewed-gaussian-sum` shape,
+  `spectral-model-clp-guide` element with generated and per-evaluation refreshed guide
+  datasets, current guide data in results, prefix-label parameter markdown, explicit
+  outer join in linked alignment.
+- Workspace: `convert_model` translates the guide element and drops dataset groups
+  without datasets; the v0.7 loader keeps the scale_list reference's non-scalar
+  `dataset_scale_list` attribute instead of failing.
+- Core tests: 548 passed, 9 xfailed; all pre-commit hooks pass. Validation tests:
+  70 passed, 1 skipped. Common rerun `20261003-163022`: 11/11 notebooks per branch,
+  14 accepted leaves (8 PASS, 6 EXPECTED_DIFFERENCE), metrics equal to September 22.
+- `testcase_spectral_model_guide` ported to staging and executed to the author's stop
+  cell. The staging objective at the reference optimum equals the reference cost exactly;
+  the 15-evaluation fit agrees within 2.1e-6 measured fitted-data normalized RMS
+  (1.8e-7 with SciPy 1.15.3).
+- Details, evidence paths and reporting differences:
+  `issues/spectral-model-guide-port.md`. No push, merge or dependency change.
+
 ## 2026-09-22 — Native scale_list port
 
 - Documented the exact `ism200/scale_list` endpoint delta versus current main;
