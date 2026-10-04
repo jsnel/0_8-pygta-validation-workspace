@@ -1,5 +1,23 @@
 # Validation changelog
 
+## 2026-10-04 — Result recording and export implemented from the revised specification
+
+- Staging `staging_rebase_with_project` restarted from `4c635ae6`: 14 local commits
+  (HEAD `778c2390`), not pushed. Prerequisites 1, 2, 4 and 5, histories, data summary,
+  `Project.start`, recording through `project.optimize`, `recompute`,
+  `list_results`/`compare_results`, `export`, docs. Fixed on the way: parameter csv
+  precision, `Result.save` repointing the scheme source path, invalid YAML for lists of
+  mappings. Core tests 515 passed, 9 xfailed; ruff check and format pass.
+- Rerun `20261004-181627`: 11/11 notebooks per branch, 14 leaves (8 PASS,
+  6 EXPECTED_DIFFERENCE), no REGRESSION or BASELINE_FAILURE. Validation tests 66 passed,
+  1 skipped, 4 failed; the same 4 fail on `4c635ae6` (`test_scale_list_migration.py`).
+- Staging examples on `4c635ae6` (`validation/runs/staging/20261004-base-4c635ae6`) and on
+  the branch saved identical results: 438 arrays, worst difference 0.0.
+- `pyglotaran-examples` branch `staging_rewrite_with_project` (`351d5a7`) adopts the API in
+  `ex_spectral_constraints` and `transient_absorption_target_analysis`; contract pins are
+  unchanged.
+- Report with decisions, deviation and open points: `issues/project-api-implementation.md`.
+
 ## 2026-10-04 — Result recording and export implemented
 
 - Staging `staging_rebase_with_project`, 14 local commits on `4c635ae6` (HEAD `87a591f9`),
