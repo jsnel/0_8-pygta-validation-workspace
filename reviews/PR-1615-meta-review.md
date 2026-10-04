@@ -124,4 +124,18 @@ Not pushed. pyglotaran `staging_rebase_with_project`, on `ffa4377c`, one commit 
 | 10 | `cf01270e` | 🩹 Clear the standard errors of parameters a fit does not estimate |
 | contract | `917addbe` | 🚇 Update validation submodule: default tolerance for 3D weighted case |
 
-The validation submodule commit is `cca4c5c` on `main` of `jsnel/pyglotaran-validation`. Every commit of the series passes ruff and the core tests on its own, checked in a separate worktree. The final commit gives the 525 passed and 9 xfailed of the working tree. In that worktree, five path tests fail on every commit, `ffa4377c` included, because the worktree lies next to pytest's temporary folder; they were deselected there and pass in the main checkout.
+The validation submodule commit is `cca4c5c` on `main` of `jsnel/pyglotaran-validation`.
+
+## Copilot threads on the PR (2026-10-05)
+
+Six unresolved Copilot threads at `917addbe`, checked against the code:
+
+| Thread | Claim | Outcome |
+| --- | --- | --- |
+| `export.py:124` | A destination created during the export is deleted, also with `overwrite=False` | True at `778c2390`; fixed in `ffa4377c` (re-check that raises `FileExistsError`). |
+| `optimization.py:200` | Evaluation count of a failed fit depends on `verbose` | Fixed in `ea5b59e8` (fix 3). |
+| `record.py:325`, `export.py:107` | A scheme file with `data:` paths is copied verbatim, so recompute and `load_result` of an export fail once the data file moves | Reproduced. Fixed in `4244b79a`: such a scheme is written from memory, without the data paths; other scheme files are still copied verbatim, so their comments and layout are kept (maintainer's choice). |
+| `export.py:96` | Overlapping exports to one name in one process share the temporary folder | Fixed in `adf36289`: the temporary folder name ends in a random uuid. `tempfile.mkdtemp` was not used because it creates the folder owner-only. |
+| `project.py:276` | Comparing an export shows `converged: None` | Deferred, as in the deferred table above. |
+
+Core tests 528 passed, 9 xfailed; ruff and pre-commit pass; both commits pass on their own. No validation rerun: the changed code runs only in `project.optimize` and `project.export`, which the validation notebooks do not call. Every commit of the series passes ruff and the core tests on its own, checked in a separate worktree. The final commit gives the 525 passed and 9 xfailed of the working tree. In that worktree, five path tests fail on every commit, `ffa4377c` included, because the worktree lies next to pytest's temporary folder; they were deselected there and pass in the main checkout.

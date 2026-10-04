@@ -1,5 +1,14 @@
 # Validation changelog
 
+## 2026-10-05 — PR #1615 Copilot threads
+
+- Six open Copilot threads checked (`reviews/PR-1615-meta-review.md`): two already fixed,
+  one deferred, three fixed in pyglotaran `4244b79a` (scheme files with `data:` paths
+  written from memory in records and exports, other scheme files still verbatim) and
+  `adf36289` (unique temporary export folder). Core tests 528 passed, 9 xfailed. No
+  validation rerun: the changed code runs only through `project.optimize` and
+  `project.export`, which the validation notebooks do not call.
+
 ## 2026-10-04 — PR #1615 review follow-up
 
 - Meta-review of three reviews of `staging_rebase_with_project` at `ffa4377c`:

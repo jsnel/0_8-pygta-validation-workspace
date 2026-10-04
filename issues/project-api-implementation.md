@@ -96,6 +96,8 @@ Second pass, on the maintainer's decision:
 
 Core tests 525 passed, 9 xfailed; ruff and pre-commit pass. Validation reruns: `20261004-230130` after the first pass (leaf table identical to `20261004-181627`) and `20261004-234112` after the second: 11/11 notebooks per branch, 8 PASS, 6 EXPECTED_DIFFERENCE, no REGRESSION. Reporting SciPy's solution lowers the fitted-data normalized RMS against v0.7.4 in 12 of 14 leaves; `simultaneous_analysis_3d_weight` falls from 2.45e-5 to 1.61e-10, so the documented root cause of its 3e-5 tolerance no longer holds. The leaf now uses the default 1e-6 tolerance as a PASS (`validation/scenarios.yml`; validation submodule `cca4c5c`, pinned by `917addbe`); under the tightened contract the same runs give 9 PASS and 5 EXPECTED_DIFFERENCE (`v07-v08-20261004-234112-tightened`). The remaining findings are listed in the meta-review.
 
+Copilot threads (2026-10-05): a scheme file that names data files (`data:`) is written from memory in records and exports, so recompute and exports no longer depend on those files; other scheme files are still copied verbatim (`4244b79a`). Each export gets its own temporary folder (`adf36289`). Core tests 528 passed, 9 xfailed.
+
 ## Environment changes
 
 - `temp/pyglotaran-staging-dev/.venv`: `uv sync --group test` from the `pyglotaran` member added the test dependencies and removed packages of the parent project; `uv sync --frozen --inexact` from the parent restored them (papermill, tenacity, tqdm, yaargh), and `validation/notebook_compat` was reinstalled as in `validation/AGENT_RERUN.md`. Before, `import glotaran` failed in this environment because of a stale editable install (`glotaran.builtin.io.hamamatsu.img_file_reader`).
