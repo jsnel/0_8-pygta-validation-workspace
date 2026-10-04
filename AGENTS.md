@@ -66,7 +66,7 @@ when their documented root causes still hold.
 - Use fitted-data agreement as the primary scientific metric; residuals,
   parameters, CLP/matrix decompositions, and metadata are secondary evidence.
 - Ordinary fitted-data normalized-RMS tolerance is `1e-6`; the transient
-  two-dataset case uses `2e-5`; the weighted 3D case uses `3e-5`.
+  two-dataset case uses `2e-5`.
 - Parameters use default `rtol=1e-4`, `atol=1e-8`.
 - Non-identifiable parameters and decompositions must be documented, not forced
   into equality by post-processing.

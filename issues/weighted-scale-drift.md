@@ -2,7 +2,20 @@
 
 ## Status
 
-Resolved — 2026-09-13. Cause 5, optimizer termination on a flat direction of
+Root cause revised — 2026-10-04. The difference came from cause 4, final
+parameter assignment, which the 2026-09-13 resolution below excluded. After
+`least_squares` returned, staging evaluated the result at the last parameters
+the objective had seen, while chi-square and the standard errors came from
+SciPy's solution `x`. v0.7.4 resets the parameters to `x` first
+(`optimizer.py:312`). That explains why chi-square agreed to `5.4e-16` while
+`scale.3` and the fitted data did not. PR #1615 review follow-up makes staging
+report `x` (the post-v0.8 `feature/scale_list` branch already does, `e96bff2c`).
+Rerun `20261004-234112`: fitted-data normalized RMS `2.45e-5` -> `1.61e-10`,
+worst parameter difference `2.6e-5` (`scale.3`) -> `4.3e-9`. The scenario uses
+the default `1e-6` tolerance and is classified PASS from 2026-10-04
+(`reviews/PR-1615-meta-review.md`).
+
+Previous status: resolved — 2026-09-13. Cause 5, optimizer termination on a flat direction of
 the objective. No v0.8 core defect and no core change. Both branches reach the
 same objective value to machine precision after an identical number of function
 evaluations and an identical termination condition; the residual `scale.3`

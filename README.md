@@ -136,6 +136,9 @@ Numerical differences are judged as a fraction of the reference magnitude, with
   branches take 86 function evaluations, terminate on the same `ftol`
   condition, and agree on `chi_square` to `5.4e-16`. The `scale.3` difference
   of 0.0026% is movement along a flat direction of a dataset weighted `0.0025`.
+  Revised 2026-10-04: the difference came from staging reporting the last
+  evaluated point instead of the optimizer's solution. With that fixed, the leaf
+  agrees to `1.6e-10` and uses the default tolerance.
 - Of the 49 case-study fits with a non-zero difference, 8 exceed 0.1%; the
   2026-09-12 MCL refresh supersedes three, leaving 4 unique fits. Every one of
   them terminated on *maximum function evaluations* on at least one branch, so

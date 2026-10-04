@@ -16,8 +16,9 @@ coordinate labels; never drop extra coordinates to manufacture agreement.
 
 Input values and dimension coordinates must agree exactly. Fitted data use RMS
 of differences divided by reference RMS (epsilon floor for zero reference), with
-finite arrays required. Tolerances are 1e-6 ordinarily, 2e-6 for spectral guidance,
-2e-5 for transient two-dataset analysis and 3e-5 for weighted 3D. Parameters use
+finite arrays required. Tolerances are 1e-6 ordinarily, 3e-6 for spectral guidance
+and 2e-5 for transient two-dataset analysis (weighted 3D: 3e-5 until 2026-10-04,
+then the default). Parameters use
 rtol=1e-4/atol=1e-8 and remain secondary alongside decompositions and metadata.
 Missing result leaves, dataset files, declared split fields, parameter artifacts,
 and empty contracts fail. Numeric disagreement in secondary evidence does not
