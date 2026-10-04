@@ -2,12 +2,14 @@
 
 ## 2026-10-05 — PR #1615 Copilot threads
 
-- Six open Copilot threads checked (`reviews/PR-1615-meta-review.md`): two already fixed,
-  one deferred, three fixed in pyglotaran `4244b79a` (scheme files with `data:` paths
-  written from memory in records and exports, other scheme files still verbatim) and
-  `adf36289` (unique temporary export folder). Core tests 528 passed, 9 xfailed. No
-  validation rerun: the changed code runs only through `project.optimize` and
-  `project.export`, which the validation notebooks do not call.
+- Nine open Copilot threads checked (`reviews/PR-1615-meta-review.md`): two already
+  fixed, one deferred, six fixed in pyglotaran `4244b79a` (scheme files with `data:` paths
+  written from memory in records and exports, other scheme files still verbatim),
+  `adf36289` (unique temporary export folder) and `85113de1` (recompute of an exported
+  recomputed result keeps the original fit's id and cost history). Core tests 528 passed,
+  9 xfailed. Pushed to the PR branch (`917addbe..85113de1`). No validation rerun: the
+  changed code runs only through `project.optimize`, `project.export` and
+  `project.recompute`, which the validation notebooks do not call.
 
 ## 2026-10-04 — PR #1615 review follow-up
 

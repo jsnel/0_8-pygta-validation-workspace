@@ -138,4 +138,12 @@ Six unresolved Copilot threads at `917addbe`, checked against the code:
 | `export.py:96` | Overlapping exports to one name in one process share the temporary folder | Fixed in `adf36289`: the temporary folder name ends in a random uuid. `tempfile.mkdtemp` was not used because it creates the folder owner-only. |
 | `project.py:276` | Comparing an export shows `converged: None` | Deferred, as in the deferred table above. |
 
-Core tests 528 passed, 9 xfailed; ruff and pre-commit pass; both commits pass on their own. No validation rerun: the changed code runs only in `project.optimize` and `project.export`, which the validation notebooks do not call. Every commit of the series passes ruff and the core tests on its own, checked in a separate worktree. The final commit gives the 525 passed and 9 xfailed of the working tree. In that worktree, five path tests fail on every commit, `ffa4377c` included, because the worktree lies next to pytest's temporary folder; they were deselected there and pass in the main checkout.
+A third Copilot review of `917addbe` added three threads:
+
+| Thread | Claim | Outcome |
+| --- | --- | --- |
+| `export.py:104` | Same as `export.py:107` above | Fixed in `4244b79a`. |
+| `recompute.py:134` | A recompute of an export of a recomputed result loses the original cost history | Fixed in `85113de1`: recompute of an export takes the original fit's id and cost history from the `recomputation` block of its `result.yml` when the export has no cost history file or no record id. |
+| `export.py:159` | After recompute → export → recompute → export, the original record id is lost | Fixed in `85113de1`, as above. |
+
+Core tests 528 passed, 9 xfailed; ruff and pre-commit pass; `4244b79a` and `adf36289` pass on their own. No validation rerun: the changed code runs only in `project.optimize`, `project.export` and `project.recompute`, which the validation notebooks do not call. Pushed to the PR branch: `917addbe..85113de1`. Every commit of the series passes ruff and the core tests on its own, checked in a separate worktree. The final commit gives the 525 passed and 9 xfailed of the working tree. In that worktree, five path tests fail on every commit, `ffa4377c` included, because the worktree lies next to pytest's temporary folder; they were deselected there and pass in the main checkout.
