@@ -1,5 +1,21 @@
 # Validation log
 
+## 2026-10-04 — Result recording and export implemented
+
+- Staging `staging_rebase_with_project`, 14 local commits on `4c635ae6` (HEAD `87a591f9`),
+  not pushed: the four prerequisites of `issues/project-api-proposal.md`, histories,
+  data summary, record writer, lineage, `recompute`, `list_results`/`compare_results`,
+  `export`, docs. Three bugs fixed on the way: `fitted_data` of a loaded result was
+  empty, parameter csv lost one ULP on reading, `write_dict` wrote invalid YAML for lists
+  of mappings. Core tests 539 passed, 9 xfailed; pre-commit hooks pass.
+- The 11 staging example notebooks pass 11/11 on `4c635ae6` and on the branch, with
+  identical saved results (494 arrays, worst difference 0.0). PFID GSI fit 9.0-9.4 s with
+  and without recording; recompute reproduces the recorded cost and RMSEs exactly.
+- `pyglotaran-examples` branch `project_api` (`a555657`) adopts the API in
+  `ex_spectral_constraints` and `transient_absorption_target_analysis`; the checkout is
+  back on `staging_rewrite`. No validation rerun; contract pins are unchanged.
+- Report with decisions and open points: `issues/project-api-implementation.md`.
+
 ## 2026-10-03 — Spectral model CLP guide port
 
 - Ported the remaining source commits `2ce22078`, `2012541b`, `f93c60d4`
