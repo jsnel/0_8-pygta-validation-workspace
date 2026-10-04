@@ -688,3 +688,49 @@ Generated [v07-v08-detailed.md](../comparisons/v07-v08-detailed.md) and its JSON
 - Readiness: draft the PR with explicit remaining CI publication/pins, case-study
   disposition and result-integrity follow-ups. See `issues/pr-readiness-20260913.md`.
   No core/notebook/tolerance/budget changes, staging, commits or runtime benchmark.
+
+## 2026-10-04 — PR #1615 review follow-up rerun
+
+- Staging `staging_rebase_with_project` at `ffa4377c` plus uncommitted review fixes
+  (`reviews/PR-1615-meta-review.md`): YAML read as UTF-8, failed-fit records and
+  evaluation counts, export source path, `None` optimizer tolerances. No change to the
+  success path of a fit.
+- Evidence: `validation/runs/{main,staging}/20261004-230130`,
+  `validation/comparisons/v07-v08-20261004-230130.{json,md}`. 11/11 notebooks per
+  branch, 0 runner failures; 14 leaves, 8 PASS, 6 EXPECTED_DIFFERENCE, no REGRESSION,
+  BASELINE_FAILURE or missing artifact. Leaf table identical to `20261004-181627`.
+- Staging examples on `staging_rewrite` (`ddfa636`). Validation tests 66 passed,
+  1 skipped, 4 failed (`test_scale_list_migration.py`, as on `4c635ae6`). No runtime
+  benchmark; no commits.
+
+## 2026-10-04 — PR #1615 review follow-up, second pass
+
+- Additional uncommitted fixes on `ffa4377c`: `Optimization.run` reports SciPy's solution
+  `x` (parameters, cost and arrays were from the last evaluated point, often a
+  finite-difference step; v0.7.4 resets to `x`), no path attributes in saved data files,
+  no standard error for fixed and expression parameters, original-fit summary in
+  `export.yml` of a recomputed result.
+- Evidence: `validation/runs/{main,staging}/20261004-234112`,
+  `validation/comparisons/v07-v08-20261004-234112.{json,md}`. 11/11 notebooks per
+  branch, 0 runner failures; 14 leaves, 8 PASS, 6 EXPECTED_DIFFERENCE, no REGRESSION,
+  BASELINE_FAILURE or missing artifact. Validation tests as in the first pass.
+- Fitted-data normalized RMS against v0.7.4 is lower in 12 of 14 leaves than in
+  `20261004-230130`; for example `ex_doas_beta/target_analysis` 2.73e-9 -> 3.25e-16,
+  `simultaneous_analysis_6d_disp` 1.01e-8 -> 4.78e-15. Unchanged: `ex_spectral_guidance`
+  (1.2578e-6) and the two-dataset TA case (8.82e-6).
+- `simultaneous_analysis_3d_weight`: 2.45e-5 -> 1.61e-10, worst parameter difference
+  2.6e-5 (`scale.3`) -> 4.3e-9. Its documented root cause ("weighted solver/scale
+  convention") and its 3e-5 tolerance no longer hold.
+
+## 2026-10-05 — Weighted 3D contract tightened
+
+- `simultaneous_analysis_3d_weight` uses the default `1e-6` fitted-data tolerance and is
+  classified PASS, in `validation/scenarios.yml` and in the pyglotaran validation
+  submodule (`cca4c5c`, pinned by pyglotaran `917addbe`). Root cause revised in
+  `issues/weighted-scale-drift.md`.
+- Same runs, tightened contract: `validation/comparisons/v07-v08-20261004-234112-tightened.{json,md}`,
+  9 PASS, 5 EXPECTED_DIFFERENCE, no REGRESSION, BASELINE_FAILURE or missing artifact;
+  the leaf at `1.61e-10`. Workspace validation tests 66 passed, 1 skipped, 4 failed
+  (`test_scale_list_migration.py`, post-v0.8 scale_list work); submodule
+  `semantic/tests` 26 passed. The staging sources are those of rerun `20261004-234112`,
+  now committed as `26f848f7`..`917addbe`.

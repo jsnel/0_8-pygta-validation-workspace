@@ -1,5 +1,30 @@
 # Validation changelog
 
+## 2026-10-04 — PR #1615 review follow-up
+
+- Meta-review of three reviews of `staging_rebase_with_project` at `ffa4377c`:
+  `reviews/PR-1615-meta-review.md`. Six findings fixed, uncommitted: YAML read as UTF-8,
+  no standard errors in failed records, evaluation count of failed fits, export no longer
+  repoints `Result.source_path` or writes it to `result.yml`, `None` optimizer tolerances,
+  getting started wording. Second pass on the maintainer's decision: the fit reports
+  SciPy's solution `x` (as v0.7.4), `export.yml` of a recomputed result holds the original
+  fit's summary, `save_dataset` writes no path attributes, fixed and expression parameters
+  get no standard error. Remaining findings deferred with reasons.
+- Core tests 525 passed, 9 xfailed; ruff and pre-commit pass.
+- Rerun `20261004-230130` (first pass): leaf table identical to `20261004-181627`.
+  Rerun `20261004-234112` (second pass): 11/11 notebooks per branch, 14 leaves (8 PASS,
+  6 EXPECTED_DIFFERENCE), no REGRESSION or BASELINE_FAILURE; fitted-data normalized RMS
+  against v0.7.4 lower in 12 of 14 leaves, `simultaneous_analysis_3d_weight` 2.45e-5 ->
+  1.61e-10. Validation tests 66 passed, 1 skipped, 4 failed (the known
+  `test_scale_list_migration.py` failures of the post-v0.8 scale_list work).
+- Validation contract: `simultaneous_analysis_3d_weight` uses the default `1e-6`
+  tolerance and is a PASS (`validation/scenarios.yml`, validation submodule `cca4c5c`);
+  its drift was the last-evaluated-point artifact, not a weighted solver/scale convention
+  (`issues/weighted-scale-drift.md` revised). Comparison of `20261004-234112` under the
+  tightened contract: 9 PASS, 5 EXPECTED_DIFFERENCE.
+- Commits: pyglotaran `staging_rebase_with_project` `26f848f7`..`917addbe` (11 commits,
+  one per fix plus the submodule pin), not pushed.
+
 ## 2026-10-04 — Result recording and export implemented from the revised specification
 
 - Staging `staging_rebase_with_project` restarted from `4c635ae6`: 14 local commits
