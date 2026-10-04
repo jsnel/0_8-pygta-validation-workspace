@@ -1,5 +1,27 @@
 # Validation changelog
 
+## 2026-10-03 — Docs build, simulate noise, project API proposal
+
+- Read the Docs build 34920111 (PR #1614) failed because the getting started notebook
+  used the removed `Project` API. Staging `54019dce` ports the notebook to
+  `load_scheme`/`load_parameters`/`Scheme.optimize` and installs pyglotaran-extras for
+  the `docs` group from `staging_support` (git URL in the dependency group; a
+  `tool.uv.sources` entry breaks the parent `temp/pyglotaran-staging-dev` uv workspace).
+  Sphinx build with the Read the Docs command and `pytest --nbval docs/source/notebooks`
+  (27 passed) succeed on Python 3.10 from `uv.lock`.
+- Staging `a9f62fa2`: `simulate(noise=True)` added noise only when `noise_seed` was set,
+  so `glotaran.testing.simulated_data` was noise-free. `noise_seed` now defaults to 42;
+  `None` draws fresh noise. Core tests: 456 passed, 9 xfailed. No validation rerun: none
+  of the 11 common notebooks calls `simulate`, and the dPSII case study passes
+  `noise_seed=42` explicitly.
+- `issues/project-api-proposal.md`: specification for result recording and export
+  (agreed 2026-10-04, replaces the three-design comparison). Every `Scheme.optimize`
+  call writes a small record to `results/NNN/`; recompute is one `dry_run` evaluation at
+  the recorded parameters, which reproduced every result array exactly in 3 measured
+  cases; full exports to `exports/` are deliberate. Prerequisites found in staging:
+  results share objects with their inputs, optimizer settings are not persisted, and
+  sliced or scaled data keeps the raw file's `source_path` in minimal saves.
+
 ## 2026-10-03 — Spectral model CLP guide port
 
 - Ported the remaining source commits `2ce22078`, `2012541b`, `f93c60d4`
