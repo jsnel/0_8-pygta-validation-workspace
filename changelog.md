@@ -1,5 +1,22 @@
 # Validation changelog
 
+## 2026-10-05 — PR #1616 review fixes
+
+- Greptile's six findings on the staging-to-main PR #1616 fixed on pyglotaran
+  `staging_final_fixes` (from `e32f1c97`, 7 commits `cab45ab3`..`3edaa514`, not pushed): stale
+  `glotaran` console script, `forward`/`backward` CLP linking at the wrong coordinate (inherited
+  from v0.7.4), dataset/element/activation labels writing outside the result folder, dataset
+  labels repeated across experiments, weighted matrices in results (all three result paths), and
+  the discarded result SVDs with the `add_svd` argument removed. The deprecations due in 0.8.0
+  are removed. Details: `issues/pr-1616-review-fixes.md`.
+- Core tests 566 passed, 9 xfailed; ruff and pre-commit pass. Rerun `20261005-023524`: 11/11
+  notebooks per branch, 9 PASS, 5 EXPECTED_DIFFERENCE, metrics equal to `20261004-234112`. The
+  weighted 3D example's matrices of datasets 2 and 3 are comparable with v0.7.4 again and differ
+  only by the dataset scale. Validation tests 66 passed, 1 skipped, 4 known failures.
+- Workspace: `migrate.py` no longer forwards `add_svd`; `profile_staging_objective.py` no longer
+  times the removed SVD; the Project API specification rejects repeated dataset labels.
+- PR description draft for #1616: `reviews/PR-1616-description.md`.
+
 ## 2026-10-05 — PR #1615 Copilot threads
 
 - Nine open Copilot threads checked (`reviews/PR-1615-meta-review.md`): two already

@@ -128,7 +128,7 @@ data:
     data:     {min: ..., max: ..., mean: ..., rms: ...}
 ```
 
-Records contain no result arrays and no data. Recomputing an attempt therefore requires that its input data was preserved or can be regenerated (see [Recompute](#recompute)). If dataset labels repeat across experiments, staging merges results by label (`glotaran/optimization/optimization.py:142`); the writer records the fit and warns that per-dataset entries are ambiguous.
+Records contain no result arrays and no data. Recomputing an attempt therefore requires that its input data was preserved or can be regenerated (see [Recompute](#recompute)). Dataset labels must be unique across experiments: since `staging_final_fixes` (2026-10-05, PR #1616 review) `Optimization` rejects a repeated label before the fit and before a record is created. Before, staging merged results by label and kept one experiment's arrays, and the writer only warned that per-dataset entries were ambiguous.
 
 Replacing the data in an existing notebook (for example with better measurements) is supported. Fitting never compares data with earlier attempts, so a fit on new data is not blocked. The data summaries show the change: `list_results` shows shape and RMS per dataset, and `compare_results` shows the data summary diff. Whether a parameter jump comes from the data change or from a model change is for the user to judge with `compare_results`.
 

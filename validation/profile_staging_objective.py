@@ -7,7 +7,7 @@
 
 Inserts a prelude that wraps ``Scheme.optimize`` to time, per invocation:
 total call, model resolution (``Optimization.__init__``), objective calls
-(matrix calculation / reduction / estimation, SVD in result construction),
+(matrix calculation / reduction / estimation),
 result construction, and peak RSS delta.
 
 Diagnostic only: writes a JSON summary; the notebook's saved results are
@@ -55,9 +55,6 @@ _obj_calc_reduced = OptimizationObjective.calculate_reduced_matrices
 _obj_calc_est = OptimizationObjective.calculate_estimations
 _obj_get_result = OptimizationObjective.get_result
 
-import glotaran.optimization.objective as _obj_mod
-_add_svd = _obj_mod.add_svd_to_result_dataset
-
 def _accumulate(name, start, extra=0.0):
     _records[-1].setdefault(name, 0.0)
     _records[-1][name] += time.perf_counter() - start - extra
@@ -97,13 +94,6 @@ def _timed_calc_est(self, reduced):
         _accumulate("estimations_s", start)
     return out
 
-def _timed_add_svd(dataset, global_dim, model_dim):
-    start = time.perf_counter()
-    out = _add_svd(dataset, global_dim, model_dim)
-    if _records:
-        _accumulate("svd_s", start)
-    return out
-
 def _timed_get_result(self):
     start = time.perf_counter()
     out = _obj_get_result(self)
@@ -117,7 +107,6 @@ OptimizationObjective.calculate_matrices = _timed_calc_matrices
 OptimizationObjective.calculate_reduced_matrices = _timed_calc_reduced
 OptimizationObjective.calculate_estimations = _timed_calc_est
 OptimizationObjective.get_result = _timed_get_result
-_obj_mod.add_svd_to_result_dataset = _timed_add_svd
 
 _scheme_optimize = Scheme.optimize
 

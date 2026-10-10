@@ -88,7 +88,6 @@ FIT_CONTROL_NAMES = {
     "gtol",
     "xtol",
     "optimization_method",
-    "add_svd",
     "x_scale",
     "compute_clp_standard_error",
     "clp_standard_error_finite_difference_relative_step",

@@ -1,5 +1,20 @@
 # Validation log
 
+## 2026-10-05 — PR #1616 review fixes (`staging_final_fixes`)
+
+- Staging core `staging_final_fixes` HEAD `3edaa514` (7 commits on `e32f1c97`, not pushed),
+  source tree hash `aaf833ee8622…`. Reference source tree `f73adf84…` (checkout on `scale_list`
+  `f93c60d4`, the same tree as the 2026-10-04 reruns, not the pinned `8f26be01`).
+- Core tests 566 passed, 9 xfailed.
+- Rerun `20261005-023524`: 11/11 notebooks per branch, no failures; 14 leaves, 9 PASS and
+  5 EXPECTED_DIFFERENCE, no REGRESSION or BASELINE_FAILURE; leaf table and fitted-data metrics
+  equal to `20261004-234112` (tightened contract).
+- `simultaneous_analysis_3d_weight`: matrices of the weighted datasets 2 and 3 changed from
+  `structural_mismatch` to `different`; the v0.7.4/v0.8 ratio is constant per dataset and equals
+  the dataset scale (0.88005, 72.7362). Dataset 1 (scale 1) passes at 4.1e-10.
+- Validation tests 66 passed, 1 skipped, 4 failed (known `test_scale_list_migration.py`).
+- Runtime benchmark not rerun. Details: `issues/pr-1616-review-fixes.md`.
+
 ## 2026-10-04 — Result recording and export implemented from the revised specification
 
 - Staging `staging_rebase_with_project` restarted from `4c635ae6`: 14 local commits
